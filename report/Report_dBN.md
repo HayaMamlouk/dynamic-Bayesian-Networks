@@ -31,9 +31,7 @@ A **Bayesian Network (BN)** is a probabilistic graphical model that represents a
 
 ### **Factorization of the Joint Probability**
 Given a set of variables $X = \{X_1, X_2, \dots, X_n\}$ with a DAG structure, the joint probability distribution can be factorized as:
-$$
-P(X_1, X_2, \dots, X_n) = \prod_{i=1}^{n} P(X_i \mid Pa(X_i))
-$$
+$$P(X_1, X_2, \dots, X_n) = \prod_{i=1}^{n} P(X_i \mid Pa(X_i))$$
 where $Pa(X_i)$ denotes the parent nodes of $X_i$ in the DAG.
 
 ### **Inference in Bayesian Networks**
@@ -58,38 +56,28 @@ A dBN is typically defined as a **two-time-slice Bayesian Network (2-TBN)**, whi
 
 #### **First-Order Markov Assumption**
 The first-order Markov assumption states that the state at time $t$ depends only on the state at $t-1$:
-$$
-P(X_t \mid X_{t-1}, X_{t-2}, \dots, X_0) = P(X_t \mid X_{t-1})
-$$
+$$P(X_t \mid X_{t-1}, X_{t-2}, \dots, X_0) = P(X_t \mid X_{t-1})$$
 This simplifies inference and learning since dependencies are limited to adjacent time steps.
 
 #### **State Transition Model**
 The transition model describes how variables evolve over time. It is captured through the **transition probabilities**:
-$$
-P(X_t \mid X_{t-1}) = \prod_{i=1}^{n} P(X_t^i \mid Pa(X_t^i))
-$$
+$$P(X_t \mid X_{t-1}) = \prod_{i=1}^{n} P(X_t^i \mid Pa(X_t^i))$$
 where $Pa(X_t^i)$ represents the parents of node $X_t^i$ in the dBN.
 
 ### **Factorization of the Joint Distribution**
 Given the temporal structure, the joint probability distribution (JPD) over a sequence of states $X_0, X_1, \dots, X_T$ can be factorized as:
-$$
-P(X_0, X_1, \dots, X_T) = P(X_0) \prod_{t=1}^{T} P(X_t \mid X_{t-1})
-$$
+$$P(X_0, X_1, \dots, X_T) = P(X_0) \prod_{t=1}^{T} P(X_t \mid X_{t-1})$$
 where:
 - $P(X_0)$ is the initial state distribution,
 - $P(X_t \mid X_{t-1})$ is the transition model that dictates how the system evolves over time.
 
 For a first-order dBN, this results in:
-$$
-P(X_0, X_1, X_2, \dots, X_T) = P(X_0) \prod_{t=1}^{T} \prod_{i=1}^{n} P(X_t^i \mid Pa(X_t^i))
-$$
+$$P(X_0, X_1, X_2, \dots, X_T) = P(X_0) \prod_{t=1}^{T} \prod_{i=1}^{n} P(X_t^i \mid Pa(X_t^i))$$
 This compact representation makes it feasible to perform inference efficiently.
 
 ### **Multi-Step Transitions**
 The standard dBN assumes a one-step transition $P(X_t \mid X_{t-1})$. However, to model multi-step dependencies, we extend this to:
-$$
-P(X_t \mid X_{t-k}, \dots, X_{t-1})
-$$
+$$P(X_t \mid X_{t-k}, \dots, X_{t-1})$$
 where $k$ determines the temporal window length. This is particularly useful for capturing long-term dependencies, such as in speech recognition or system modeling.
 
 ### **Learning dBN Parameters and Structure**
