@@ -181,7 +181,7 @@ DBNs are widely used in domains where systems evolve over time, such as:
 
 # Cahier des Charges: Extension of pyAgrum for Multi-Step Dynamic Bayesian Networks
 
-## 1. Objectif
+# 1. Objectif
 
 The goal of this project is to extend the pyAgrum library to support multi-step time windows (e.g., 2, 3, or 4 steps) for Dynamic Bayesian Networks (dBNs). This extension will involve:
 
@@ -189,102 +189,172 @@ The goal of this project is to extend the pyAgrum library to support multi-step 
 - Enhancing visualization and inference capabilities.
 - Providing unit testing and documentation.
 
-## 2. Key Deadlines
+# 2. Key Deadlines
 
 - **Submission Deadline:** May 9, 2025
 - **Presentation Date:** May 15, 2025
 
-## 3. Project Breakdown
+# 3. Project Breakdown
 
-### Part 1: Modelization (Multi-Temporal Dependencies)
+## Part 1: Modelization (Multi-Temporal Dependencies)
 
-**Goal:** Implement support for multi-step time windows in dBNs.
+### **Class Attributes**
 
-#### 1 Initialization
+The `dBN` class has the following attributes:
 
-- The user initializes a dBN using:
+1. **`base_network`**:
+
+   - The underlying Bayesian Network, created using `pyAgrum.BayesNet()`.
+   - Represents the structure and dependencies of the DBN.
+
+2. **`variables`**:
+
+   - A list of variables in the DBN.
+   - Each variable is replicated across `k` time slices.
+
+3. **`arcs`**:
+
+   - A list of directed edges (arcs) between variables across time slices.
+   - Each arc is represented as a tuple of tuples, e.g., `((v1, 3), (v1, 4))`.
+
+4. **`k`**:
+   - The time horizon, representing the number of time slices in the DBN.
+   - Defines the temporal dimension of the network.
+
+---
+
+### **Class Methods**
+
+### **1. `createDBN(int k)`**
+
+Creates the base Dynamic Bayesian Network and sets the time horizon `k`.
+
+- **Parameters**:
+  - `k` (int): The number of time slices in the DBN.
+- **Returns**:
+  - Initializes the `base_network` as a `pyAgrum.BayesNet()` and sets the `k` attribute.
+- **Example**:
+
   ```python
-  init_dBN(variables, arcs, p)
+  dbn = dBN()
+  dbn.createDBN(5)  # Creates a DBN with 5 time slices
   ```
-- **Variables:** A list of variables, where each element is either:
 
-  - A tuple `(name, domain_size)`, e.g., `("a", 2)` for a binary variable `a`.
-  - A variable `a` (defaulting to binary domain `2`)
-  - Syntax options :
-    - A single character. **(Decision needed)** Should uppercase and lowercase letters represent different variables?
-    - Variable names must be strings without numbers to avoid confusion with time slices, e.g., `"Flu", "Cough", "Fever"`
+  ### **2. `addVar(Variable a)`**
 
-- **Arcs:** A list of directed edges in the form:
+  Adds a variable to the DBN across all time slices.
+
+- **Parameters**:
+  - `a` (Variable): The variable to be added. This variable is created using one of `pyAgrum`'s variable creation methods.
+- **Behavior**:
+  - Replicates the variable ``across all`k` time slices.
+  - Names the variables as `{variable_name}#{time_slice}` (e.g., `A#2` for variable `A` at time slice 2).
+  - Uses `pyAgrum`'s `add` method to add the variables to the `base_network`.
+- **Example**:
 
   ```python
-  ((variable_name, time_slice), (variable_name, time_slice))
+  a = gum.LabelizedVariable("A", "Variable A", 2)  # Binary variable
+  dbn.addVar(a)  # Adds A#0, A#1, ..., A#k to the DBN
   ```
 
-  Example: `(("a", 0), ("a", 1))` represents `a_0 → a_1`.
+  ### **3. `addArc(Arc a)`**
 
-- **Time Dimension (p):** Defines the number of time slices to generate.
-- The initialization automatically expands variables across time slices (e.g., `init_dBN([a, b], [((a,0), (a,1)), ((a,0), (b,0))], 2)` creates `a_0, a_1, b_0, b_1`).
+  Adds a directed arc between variables across time slices.
 
-#### 2 Verification
+- **Parameters**:
+  - `a` (tuple): The arc to be added, represented as `((a1, t1), (a2, t2))`, where:
+    - `a1` and `a2` are variables.
+    - `t1` and `t2` are time slices.
+- **Checks**:
+  - Ensures the arc does not already exist.
+  - Ensures `t1 <= t2` (no backward arcs).
+  - Ensures `|t2 - t1| <= k` (arcs cannot span more than `k` time slices).
+  - All other checks are handled by pyAgrum's own functions.
+- **Behavior**:
+  - Uses `pyAgrum`'s `addArc` method to add the arc to the `base_network` if all checks pass.
+- **Example**:
 
-- **Variable Checking (`check_variable`)**
-  - Ensures variable naming rules are followed.
-- **Arc Checking (`check_arc`)**
-  - ((variable_name, i), (variable_name, j)
-  - Prevents **backward arcs** (`i > j` error) and **reflexive arcs** (`i = j` error for the same variable).
-- **Time-Slice Validation (`is_kTBN(dBN, k)`)**
-  - Ensures that for each variable, there exist `a_0, a_1, ..., a_k`.
-  - Calls `check_variable`
-  - Calls `check_arc`
+  ```python
+  dbn.addArc(((a, 3), (a, 4)))  # Adds an arc from A#3 to A#4
+  ```
 
-#### 3 Construction
+  ### **4. `deleteVar(Variable a)`**
 
-- **Building the Network:**
-  - Create a Bayesian Network (`gum.BayesNet()`).
-  - Iterate over variables and time slices to create nodes. Format accepted by gum.LabelizedVariable().
-  - Iterate over arcs and call `addArc()` ensuring arcs do not exceed `p`. We have to translate into a format accepted by addArc().
+  Deletes a variable and its associated arcs from all time slices.
 
-#### 4 Functionalities
+- **Parameters**:
+  - `a` (Variable): The variable to be deleted.
+- **Behavior**:
+  - Removes all instances of the variable across all time slices.
+  - Uses `pyAgrum`'s `erase` method to remove the variable and its associated arcs.
+- **Example**:
+  ```python
+  dbn.deleteVar(a)  # Deletes A#0, A#1, ..., A#k and associated arcs
+  ```
 
-- **Unrolling (`unroll_dBN`)**
+### **5. `deleteArc(Arc a)`**
 
-  - When unrolling a DBN, the structure of incoming arcs from the last existing time slices should be extended to the newly generated time slices. Specifically, if the original DBN has $ p $ time slices and there are dependencies at time slices $ t - 3 $ and $ t - 1 $, these same dependencies should be replicated when new time slices are added. For example, if a DBN initially has three time slices (0, 1, 2), and there are incoming arcs at time slice $ 3 - 3 $ (i.e., 0) and $ 3 - 1 $ (i.e., 2), then when extending the DBN beyond time slice 3, the same pattern should apply. That means at time slice 4, the arcs should follow the same structure as they did in the original DBN, ensuring a consistent extension of dependencies over time.
+Deletes a specified arc from the DBN.
 
-- **Adding Variables (`addVar_dBN`)**
-  - `addVar_dBN("c")`: Adds a new variable.
-  - `addVar_dBN(("a", i))`: Adds an existing variable to a new time slice i.
-- **Adding Arcs (`addArc_dBN`)**
-  - Example: `addArc_dBN(("x", i), ("y", j))` while ensuring `i, j` are within bounds and `x, y` are existing variables.
-- **Removing Variables (`removeVar_dBN`)**
-  - `removeVar_dBN("a")`: Removes a variable entirely.
-  - `addVar_dBN(("a", i))`: Removes a variable from a specific time slice i.
-  - This function ensures that the depending arcs are removed as well.
-- **Removing Arcs (`removeArc_dBN`)**
-  - Removes a specific arc.
-- **CPT Modification (`changeCPT_dBN`)**
-  - **(To be defined)** How to modify conditional probability tables.
+- **Parameters**:
+  - `a` (tuple): The arc to be deleted, represented as `((a1, t1), (a2, t2))`.
+- **Behavior**:
+  - Uses `pyAgrum`'s `eraseArc` method to remove the arc from the `base_network`.
+- **Example**:
+  ```python
+  dbn.deleteArc(((a, 3), (a, 4)))  # Deletes the arc from A#3 to A#4
+  ```
 
-### Part 2: Inference (Non-Optimized)
+### **Usage Example**
+
+```python
+import pyAgrum as gum
+
+# Initialize the DBN
+dbn = dBN()
+dbn.createDBN(5)  # Create a DBN with 5 time slices
+
+# Add variables
+a = gum.LabelizedVariable("A", "Variable A", 2)  # Binary variable
+b = gum.LabelizedVariable("B", "Variable B", 3)  # Ternary variable
+dbn.addVar(v1)
+dbn.addVar(v2)
+
+# Add arcs
+dbn.addArc(((a, 0), (a, 1)))  # A#0 → A#1
+dbn.addArc(((a, 1), (b, 2)))  # A#1 → B#2
+
+# Delete a variable
+dbn.deleteVar(a)  # Removes A#0, A#1, ..., A#5 and associated arcs
+
+# Delete an arc
+dbn.deleteArc(((b, 2), (b, 3)))  # Removes B#2 → B#3
+```
+
+## Part 2: Inference (Non-Optimized)
 
 **Goal:** Implement inference without optimization.
 
 - Takes a dBN, unrolls it, and performs classical inference techniques.
 
-### Part 3: Non-Stationary dBNs (If Time Permits)
+## Part 3: Non-Stationary dBNs (If Time Permits)
 
 - Extends dBNs to support time-varying structures by associating each dBN in a family with a specific usage period. This means that instead of having a fixed structure, the model can adapt its dependencies and parameters based on different phases of usage. As time progresses, different dBNs from the family are applied depending on the defined utilization period, allowing the network to better capture changing dynamics in the system.
 
-### Part 4: Structure Learning (If Time Permits)
+## Part 4: Structure Learning (If Time Permits)
 
 **Goal:** Implement structure learning techniques for dynamic Bayesian networks.
 
-### Part 5: Unit Testing (Obligatory)
+## Part 5: Unit Testing (Obligatory)
 
 **Goal:** Ensure functionality correctness through testing and documentation.
 
 - Develop unit tests for all implemented functions.
 
-## 4. Project Timeline (12 Weeks)
+</br>
+</br>
+
+# 4. Project Timeline (12 Weeks)
 
 | Phase              | Duration |
 | ------------------ | -------- |
