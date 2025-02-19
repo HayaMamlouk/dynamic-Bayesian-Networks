@@ -23,26 +23,40 @@ When extended to dynamic systems, Dynamic Bayesian Networks (dBNs) model the evo
 
 However, the current implementation of dBNs in the pyAgrum library has limitations. The library primarily supports one-step temporal transitions, which restricts its applicability to more complex dynamic systems where multiple time steps need to be modeled simultaneously. This limitation hinders its ability to capture more intricate temporal dependencies that are often present in real-world applications.
 
-To address this challenge, our project aims to extend pyAgrum to support multi-step time windows (e.g., 2, 3, or 4 steps) for dBN modeling. This extension will enable more accurate representation and inference of dynamic systems, providing a more flexible and powerful tool for modeling and reasoning in temporal domains. Additionally, we will focus on enhancing the visualization and inference as well as structure learning capabilities to ensure that the extended functionality is both accessible and effective for practical use cases.
+To address this challenge, our project aims to extend pyAgrum to support multi-step time windows (e.g., 2, 3, or more steps) for dBN modeling. This extension will enable more accurate representation and inference of dynamic systems, providing a more flexible and powerful tool for modeling and reasoning in temporal domains. Additionally, we will focus on enhancing the visualization and inference as well as structure learning capabilities to ensure that the extended functionality is both accessible and effective for practical use cases.
 
 <div>
-## 1. Bayesian Networks (BNs)
-A **Bayesian Network (BN)** is a probabilistic graphical model that represents a set of random variables and their conditional dependencies using a **directed acyclic graph (DAG)**. It provides a compact representation of the **joint probability distribution (JPD)** of a system.
 
-### **Factorization of the Joint Probability**
+## **1. Bayesian Networks (BNs)**
 
-Given a set of variables $X = \{X_1, X_2, \dots, X_n\}$ with a DAG structure, the joint probability distribution can be factorized as:
-$$P(X_1, X_2, \dots, X_n) = \prod_{i=1}^{n} P(X_i \mid Pa(X_i))$$
-where $Pa(X_i)$ denotes the parent nodes of $X_i$ in the DAG.
+### *Bayesian Networks*
 
-### **Inference in Bayesian Networks**
+A **Bayesian Network (BN)** is a probabilistic graphical model that represents a set of random variables and their conditional dependencies using a **directed acyclic graph (DAG)**. It provides a compact representation of the **joint probability distribution (JPD)** of a system, allowing for efficient reasoning under uncertainty.
 
-Inference in a BN involves computing probabilities of unknown variables given observed evidence. Common methods include:
+### Factorization of the Joint Probability
 
-- **Variable Elimination**
-- **Belief Propagation (Message Passing Algorithm)**
-- **Sampling Methods (Monte Carlo, Gibbs Sampling)**
-</div>
+Given a set of variables $(X = \{X_1, X_2, \dots, X_n\})$ with a DAG structure, the joint probability distribution can be factorized as:
+
+$$
+P(X_1, X_2, \dots, X_n) = \prod_{i=1}^{n} P(X_i | Pa(X_i))
+$$
+
+where $Pa(X_i)$ denotes the set of parent nodes of $X_i$ in the DAG. This factorization follows from the assumption that each variable is **conditionally independent** of its non-descendants, given its parents, making Bayesian networks highly efficient for probabilistic inference.
+
+--- 
+### **Local Markov Property**
+
+A Bayesian network $X$ with respect to $G$ satisfies the **local Markov property**, meaning that each variable is conditionally independent of its **non-descendants** given its parent variables:
+
+$$X_v \perp\!\!\!\perp X_{V \setminus de(v)} | X_{Pa(v)}, \quad \forall v \in V$$
+
+where $de(v)$ is the set of **descendants** of $v$, and $V \setminus de(v)$ represents the set of **non-descendants** of $v$. This ensures that probabilistic dependencies are explicitly encoded in the graph structure.
+
+Using the above definition, the conditional independence can be expressed as:
+
+$$P(X_v = x_v | X_i = x_i \text{ for each } X_i \text{ that is not a descendant of } X_v) = P(X_v = x_v | X_j = x_j \text{ for each } X_j \text{ that is a parent of } X_v)$$
+
+Since the graph is acyclic, the set of parent nodes is always a subset of the non-descendant nodes.
 
 <br>
 
@@ -52,13 +66,13 @@ A **Dynamic Bayesian Network (DBN)** is a probabilistic graphical model that ext
 
 ---
 
-## **1. Core Components of a DBN**
+### **1. Core Components of a DBN**
 
 A DBN is defined by the following components:
 
 1. **Random Variables Across Time**:
 
-   - At each time step $t$, there is a set of random variables $$ \mathbf{X}\_t = \{X_t^1, X_t^2, \dots, X_t^n\}, $$ where $n$ is the number of variables in the system.
+   - At each time step $t$, there is a set of random variables $\mathbf{X}\_t = \{X_t^1, X_t^2, \dots, X_t^n\}$,  where $n$ is the number of variables in the system.
    - These variables represent the state of the system at time $t$.
 
 2. **Intra-Slice Dependencies**:
@@ -75,7 +89,7 @@ A DBN is defined by the following components:
 
 ---
 
-## **2. Temporal Structure**
+### **2. Temporal Structure**
 
 A DBN is often represented as a **two-time-slice Bayesian Network (2-TBN)**, which captures the transition model between two consecutive time steps. The 2-TBN assumes the **Markov property**, meaning the state at time $t$ depends only on the state at $t-1$.
 
@@ -97,13 +111,15 @@ $$
 P(\mathbf{X}_t \mid \mathbf{X}_{t-1}) = \prod_{i=1}^n P(X_t^i \mid \text{Pa}(X_t^i)),
 $$
 
-where $ \text{Pa}(X_t^i) $ represents the parents of $X_t^i$ in the DBN (which may include variables from the same time slice $ t $ or the previous time slice $ t-1 $).
+where $\text{Pa}(X_t^i)$ represents the parents of $X_t^i$ in the DBN (which may include variables from the same time slice $t$ or the previous time slice $t-1$).
+
+In the case of k-Order dBN $Pa(X_t^i)$ represents the parents of node $X_t^i$ in the dBN.
 
 ---
 
-## **3. Joint Probability Distribution**
+### **3. Joint Probability Distribution**
 
-The joint probability distribution (JPD) over all time steps $ t = 0 $ to $ t = T $ is factorized as:
+The joint probability distribution (JPD) over all time steps $t = 0$ to $t = T$ is factorized as:
 
 $$
 P(\mathbf{X}_0, \mathbf{X}_1, \dots, \mathbf{X}_T) = P(\mathbf{X}_0) \prod_{t=1}^T P(\mathbf{X}_t \mid \mathbf{X}_{t-1}).
@@ -111,10 +127,10 @@ $$
 
 Here:
 
-- $ P(\mathbf{X}\_0) $ is the **initial state distribution**, representing the probabilities at time $ t = 0 $.
-- $ P(\mathbf{X}_t \mid \mathbf{X}_{t-1}) $ is the **transition model**, describing how the system evolves from $ t-1 $ to $ t $.
+- $P(\mathbf{X}\_0)$ is the **initial state distribution**, representing the probabilities at time $t = 0$.
+- $P(\mathbf{X}_t \mid \mathbf{X}_{t-1})$ is the **transition model**, describing how the system evolves from $t-1$  to $t$.
 
-For a first-order DBN, this simplifies to:
+For a first-order dBN, this simplifies to:
 
 $$
 P(\mathbf{X}_0, \mathbf{X}_1, \dots, \mathbf{X}_T) = P(\mathbf{X}_0) \prod_{t=1}^T \prod_{i=1}^n P(X_t^i \mid \text{Pa}(X_t^i)).
@@ -122,52 +138,19 @@ $$
 
 ---
 
-## **4. Multi-Step Transitions**
+### **4. Multi-Step Transitions**
 
-While the first-order Markov assumption is common, DBNs can also model **higher-order dependencies** by extending the transition model to depend on multiple previous time steps. For example:
+While the first-order Markov assumption is common, dBNs can also model **higher-order dependencies** by extending the transition model to depend on multiple previous time steps. For example:
 
 $$
 P(\mathbf{X}_t \mid \mathbf{X}_{t-k}, \dots, \mathbf{X}_{t-1}),
 $$
 
-where $ k $ is the temporal window length. This is useful for capturing long-term dependencies in systems where the state at time $ t $ depends on states further back in time.
+where $k$ is the temporal window length. This is useful for capturing long-term dependencies in systems where the state at time $t$ depends on states further back in time.
 
 ---
 
-## **5. Inference in DBNs**
-
-Inference in DBNs involves computing posterior distributions over hidden variables given observed evidence over time. Common inference tasks include:
-
-- **Filtering**: Compute $ P(\mathbf{X}\_t \mid \mathbf{Y}\_1, \dots, \mathbf{Y}\_t) $, where $ \mathbf{Y}\_t $ are observations up to time $ t $.
-- **Smoothing**: Compute $ P(\mathbf{X}\_k \mid \mathbf{Y}\_1, \dots, \mathbf{Y}\_t) $ for $ k < t $.
-- **Prediction**: Compute $ P(\mathbf{X}\_{t+\Delta} \mid \mathbf{Y}\_1, \dots, \mathbf{Y}\_t) $ for future time steps $ \Delta $.
-
-Inference algorithms for DBNs include:
-
-- **Forward-Backward Algorithm**: For exact inference in linear chains.
-- **Kalman Filters**: For continuous-state DBNs (e.g., in linear dynamical systems).
-- **Particle Filters**: For approximate inference in non-linear or non-Gaussian systems.
-
----
-
-## **6. Learning in DBNs**
-
-Learning a DBN involves two main tasks:
-
-1. **Parameter Learning**:
-
-   - Estimate the CPDs from data using methods like:
-     - **Maximum Likelihood Estimation (MLE)**: Directly estimate parameters from observed data.
-     - **Expectation-Maximization (EM)**: For cases with missing or hidden data.
-
-2. **Structure Learning**:
-   - Discover the underlying graph structure (intra-slice and inter-slice dependencies) using:
-     - **Score-Based Methods**: Optimize a scoring function (e.g., BIC, AIC) over possible structures.
-     - **Constraint-Based Methods**: Use conditional independence tests to infer dependencies.
-
----
-
-## **7. Applications of DBNs**
+### **5. Applications of DBNs**
 
 DBNs are widely used in domains where systems evolve over time, such as:
 
@@ -205,11 +188,11 @@ The `dBN` class has the following attributes:
 1. **`base_network`**:
 
    - The underlying Bayesian Network, created using `pyAgrum.BayesNet()`.
-   - Represents the structure and dependencies of the DBN.
+   - Represents the structure and dependencies of the dBN.
 
 2. **`variables`**:
 
-   - A list of variables in the DBN.
+   - A list of variables in the dBN.
    - Each variable is replicated across `k` time slices.
 
 3. **`arcs`**:
@@ -240,24 +223,45 @@ Creates the base Dynamic Bayesian Network and sets the time horizon `k`.
   dbn.createDBN(5)  # Creates a DBN with 5 time slices
   ```
 
-  ### **2. `addVar(Variable a)`**
+### **2. AddVar methods**
+  ### **2.1 `addVar(Variable a)`**
 
   Adds a variable to the DBN across all time slices.
 
-- **Parameters**:
-  - `a` (Variable): The variable to be added. This variable is created using one of `pyAgrum`'s variable creation methods.
-- **Behavior**:
-  - Replicates the variable ``across all`k` time slices.
-  - Names the variables as `{variable_name}#{time_slice}` (e.g., `A#2` for variable `A` at time slice 2).
-  - Uses `pyAgrum`'s `add` method to add the variables to the `base_network`.
-- **Example**:
+  - **Parameters**:
+    - `a` (Variable): The variable to be added. This variable is created using one of `pyAgrum`'s variable creation methods.
+  - **Behavior**:
+    - Replicates the variable ``across all`k` time slices.
+    - Names the variables as `{variable_name}#{time_slice}` (e.g., `A#2` for variable `A` at time slice 2).
+    - Uses `pyAgrum`'s `add` method to add the variables to the `base_network`.
+  - **Example**:
 
-  ```python
-  a = gum.LabelizedVariable("A", "Variable A", 2)  # Binary variable
-  dbn.addVar(a)  # Adds A#0, A#1, ..., A#k to the DBN
-  ```
+    ```python
+    a = gum.LabelizedVariable("A", "Variable A", 2)  # Binary variable
+    dbn.addVar(a)  # Adds A#0, A#1, ..., A#k to the DBN
+    ```
 
-  ### **3. `addArc(Arc a)`**
+    ### **2.2 `AddFastVar(str fast_description, int default_domain_size=2)`**  
+
+    Adds a variable to the DBN efficiently using `pyAgrum.fastVariable()`, a method for rapid variable creation with minimal overhead.
+
+    ### **Parameters**:
+    - `fast_description` (str): A string following `pyAgrum`'s fast syntax for variable creation.
+    - `default_domain_size` (int, optional): The number of modalities (default is `2`). If `fast_description` does not specify the number of modalities, this value is used.
+
+    ### **Behavior**:
+    - Uses `pyAgrum.fastVariable()` to create and add the variable efficiently. 
+    - Replicates the variable across all `k` time slices.
+    - Names the variables as `{variable_name}#{time_slice}` (e.g., `B#3` for variable `B` at time slice 3).
+    - Ensures faster variable creation and addition compared to `addVar()`.
+
+    ### **Example**:
+
+    ```python
+    dbn.AddFastVar("B[0,1]")  # Adds B#0, B#1, ..., B#k to the DBN efficiently
+    ```
+
+### **3. `addArc(Arc a)`**
 
   Adds a directed arc between variables across time slices.
 
@@ -278,7 +282,7 @@ Creates the base Dynamic Bayesian Network and sets the time horizon `k`.
   dbn.addArc(((a, 3), (a, 4)))  # Adds an arc from A#3 to A#4
   ```
 
-  ### **4. `deleteVar(Variable a)`**
+### **4. `deleteVar(Variable a)`**
 
   Deletes a variable and its associated arcs from all time slices.
 
