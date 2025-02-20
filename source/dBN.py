@@ -46,7 +46,7 @@ class dBN:
             v (pyAgrum.Variable): The variable to be added. This variable is created using one of pyAgrum's variable creation methods.
         """
         # Check if the variable is already in the DBN
-        if v.name() in [var for var in self.variables]:
+        if any(var.startswith(v.name() + "#") for var in self.variables):
             raise ValueError(f"Variable '{v.name()}' already exists in the dBN.")
 
         # Add the variable to all time slices
@@ -59,15 +59,19 @@ class dBN:
             n = self.base_network.add(var)  # Add to the base network
             self.variables[var_name] = n  # Add to the list of variables
 
-        print(f"Added variable '{v.name()}' across {self.k} time slices.")
+        print(f"Added variable '{v}' across {self.k} time slices.")
 
 
     def getVariables(self):
         """
-        Returns the list of variables in the DBN.
+        Returns a list of unique variable names in the DBN.
+    
+        Returns:
+            list: A list of unique variable names (e.g., ["A", "B"]).
         """
-        return list(self.variables.keys()
-)
+        # Extract base variable names (e.g., "A" from "A#0")
+        base_names = set(var.split("#")[0] for var in self.variables.keys())
+        return list(base_names)
 
     def addArc(self, a):
         """
@@ -81,7 +85,7 @@ class dBN:
         (v1, t1), (v2, t2) = a
 
 
-        arc = ((v1.name(), t1), (v2.name(), t2))
+        arc = ((v1, t1), (v2, t2))
 
         # Check if the arc already exists
         if arc in self.arcs:
@@ -97,8 +101,8 @@ class dBN:
 
         # Check if the variables exist in the DBN
 
-        var1 = f"{v1.name()}#{t1}"
-        var2 = f"{v2.name()}#{t2}"
+        var1 = f"{v1}#{t1}"
+        var2 = f"{v2}#{t2}"
         if var1 not in [var for var in self.variables] or var2 not in [var for var in self.variables]:
             raise ValueError(f"One or both variables in arc {arc} do not exist in the DBN.")
 
@@ -125,21 +129,21 @@ class dBN:
 
         Parameters:
             a (tuple): The arc to be deleted, represented as ((v1, t1), (v2, t2)), where:
-                - v1 and v2 are variables.
+                - v1 and v2 are variable names.
                 - t1 and t2 are time slices.
         """
         (v1, t1), (v2, t2) = a
 
         # Construct the arc in the format stored in self.arcs
-        arc = ((v1.name(), t1), (v2.name(), t2))
+        arc = ((v1, t1), (v2, t2))
 
         # Check if the arc exists in the DBN
         if arc not in self.arcs:
             raise ValueError(f"Arc {arc} does not exist in the DBN.")
 
         # Construct the variable names for the given time slices
-        var1 = f"{v1.name()}#{t1}"
-        var2 = f"{v2.name()}#{t2}"
+        var1 = f"{v1}#{t1}"
+        var2 = f"{v2}#{t2}"
 
         # Remove the arc from the base network
         self.base_network.eraseArc(self.variables[var1], self.variables[var2])
@@ -156,15 +160,15 @@ class dBN:
         Deletes a variable and its associated arcs from all time slices.
 
         Parameters:
-            v (pyAgrum.Variable): The variable to be deleted.
+            v (String): The name of the variable to be deleted.
         """
         # Check if the variable exists in the DBN
-        if not any(var.startswith(v.name() + "#") for var in self.variables):
-            raise ValueError(f"Variable '{v.name()}' does not exist in the DBN.")
+        if not any(var.startswith(v + "#") for var in self.variables):
+            raise ValueError(f"Variable '{v}' does not exist in the DBN.")
 
         # Delete the variable from all time slices
         for t in range(self.k):
-            var_name = f"{v.name()}#{t}"
+            var_name = f"{v}#{t}"
             if var_name in self.variables:
                 self.base_network.erase(self.variables[var_name])  # Remove from the base network
                 del self.variables[var_name]  # Remove from the list of variables
@@ -173,11 +177,11 @@ class dBN:
         arcs_to_remove = []
         for arc in self.arcs:
             (v1, t1), (v2, t2) = arc
-            if v1 == v.name() or v2 == v.name():
+            if v1 == v or v2 == v:
                 arcs_to_remove.append(arc)
 
         # Remove the collected arcs from the list of arcs
         for arc in arcs_to_remove:
             self.arcs.remove(arc)
 
-        print(f"Deleted variable '{v.name()}' and its associated arcs from the DBN.")
+        print(f"Deleted variable '{v}' and its associated arcs from the DBN.")
