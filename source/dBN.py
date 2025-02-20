@@ -65,13 +65,22 @@ class dBN:
     def getVariables(self):
         """
         Returns a list of unique variable names in the DBN.
-    
+
         Returns:
             list: A list of unique variable names (e.g., ["A", "B"]).
         """
         # Extract base variable names (e.g., "A" from "A#0")
         base_names = set(var.split("#")[0] for var in self.variables.keys())
         return list(base_names)
+    
+    def getAllVariables(self):
+        """
+        Returns a list of all variables for all timeslices in the DBN.
+
+        Returns:
+            list: A list of all variables in the DBN.
+        """
+        return list(self.variables.keys())
 
     def addArc(self, a):
         """
