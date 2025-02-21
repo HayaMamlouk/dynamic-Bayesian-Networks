@@ -194,3 +194,9 @@ class dBN:
             self.arcs.remove(arc)
 
         print(f"Deleted variable '{v}' and its associated arcs from the DBN.")
+
+    def showDBN(self):
+        """
+        Displays the DBN.
+        """
+        return self.base_network
