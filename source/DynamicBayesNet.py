@@ -17,7 +17,7 @@ class DynamicBayesNet:
         self.separator = separator  # Separator used to distinguish variables across time slices
 
     def _userToCodeName(self, name, time_slice):
-        """
+        r"""
         Converts a user-friendly variable name to a code-friendly name.
 
         --------------------------------------------
@@ -49,15 +49,15 @@ class DynamicBayesNet:
         return split[0], split[1]
     
     def _nameToString(self, var_name):
-        """
+        r"""
         Converts a variable name to a string representation. Name should be in the format: {string + separator + time_slice}.
 
-        --------------------------------------------
-        Parameters:
+        Parameters
+        ----------
             var_name (str): The variable name.
 
-        --------------------------------------------
-        Returns:
+        Returns
+        -------
             str: A string representation of the variable name.
         """
         name, t = self._codeToUserName(var_name)
@@ -81,7 +81,7 @@ class DynamicBayesNet:
             A string representation of the arc.
         """
 
-        return f"({self._nameToString(self._nameFromId(tail))} -> {self._nameToString(self._nameFromId(head))})"
+        return f"{self._nameToString(self._nameFromId(tail))} -> {self._nameToString(self._nameFromId(head))}"
 
     def _nameFromId(self, id):
         r"""
@@ -100,10 +100,11 @@ class DynamicBayesNet:
         return self.dBN.variable(id).name()
 
     def add(self, v):
-        """
+        r"""
         Adds a variable to the dBN across all time slices.
 
-        Parameters:
+        Parameters
+        ----------
             v (pyAgrum.Variable): The variable to be added. This variable is created using one of pyAgrum's variable creation methods.
         """
 
@@ -115,9 +116,6 @@ class DynamicBayesNet:
         # Extract the variable's name and description
         name = v.name()
         description = v.description()
-
-        # Convert name to be added to the dBN
-        # name = self._userToCodeName(name, len(self.variables))
 
         # Add the variable to all time slices
         for t in range(self.k):
@@ -131,7 +129,7 @@ class DynamicBayesNet:
         # Add the variable to the set of variables
         self.variables.add(name)
 
-        print(f"Added variable '{v}' across {self.k} time slices.")
+        print(f"Added variable '{v.name()}' across {self.k} time slices.")
 
     def idFromName(self, name):
         r"""
@@ -161,20 +159,20 @@ class DynamicBayesNet:
 
         return self.dBN.idFromName(name)
 
-    def addArc(self, v1, v2):
+    def addArc(self, tail, head):
         r"""
         Adds a directed arc between variables v1 and v2 across time slices.
 
         Parameters
         ----------
-            v1 (tuple): The variable the arc starts from, represented as (n, t)
-            v2 (tuple): The variable the arc ends at, represented as (n, t) where:
+            tail (tuple): The variable the arc starts from, represented as (n, t)
+            head (tuple): The variable the arc ends at, represented as (n, t) where:
                 - n is the variable name (string).
                 - t is the time slice (int).
         """
         # Extract the variable names and time slices
-        n1, t1 = v1
-        n2, t2 = v2
+        n1, t1 = tail
+        n2, t2 = head
 
         # Check for backward arcs (t1 > t2)
         if t1 > t2:
@@ -188,13 +186,14 @@ class DynamicBayesNet:
         var_name1 = self._userToCodeName(n1, t1)
         var_name2 = self._userToCodeName(n2, t2)
         
+        # Get the variable ids
         i1 = self.idFromName(var_name1)
         i2 = self.idFromName(var_name2)
 
         # Add the arc to the base network
         self.dBN.addArc(i1, i2)
         
-        print(f"Added arc ({n1, t1}) -> ({n2, t2}) to the DBN.")
+        print(f"Added arc {self._arcToString(i1, i2)} to the DBN.")
 
     def arcs(self):
         r"""
@@ -211,9 +210,7 @@ class DynamicBayesNet:
 
         for arc in arcs:
             i1, i2 = arc
-            n1 = self._codeToUserName(self._nameFromId(i1))
-            n2 = self._codeToUserName(self._nameFromId(i2))
-            l_arcs.append(f"({n1}) -> ({n2})")
+            l_arcs.append(self._arcToString(i1, i2))
         
         return l_arcs
 
