@@ -48,7 +48,7 @@ class DynamicBayesNet:
         split = name.split(self.separator)
         return split[0], split[1]
     
-    def _nameToString(self, var_name):
+    def __nameToString__(self, var_name):
         r"""
         Converts a variable name to a string representation. Name should be in the format: {string + separator + time_slice}.
 
@@ -81,9 +81,9 @@ class DynamicBayesNet:
             A string representation of the arc.
         """
 
-        return f"{self._nameToString(self._nameFromId(tail))} -> {self._nameToString(self._nameFromId(head))}"
+        return f"{self.__nameToString__(self.__nameFromId__(tail))} -> {self.__nameToString__(self.__nameFromId__(head))}"
 
-    def _nameFromId(self, id):
+    def __nameFromId__(self, id):
         r"""
         Returns the name of a variable given its id.
 
