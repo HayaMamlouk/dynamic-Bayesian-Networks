@@ -12,11 +12,11 @@ class DynamicBayesNet:
         Initializes the dBN object.
         """
         self.dBN = gum.BayesNet()  # The underlying Bayesian Network (pyAgrum.BayesNet)
-        self.variables = set()       # List of variables in the DBN
+        self.variables = set()       # List of variables in the DBN (atemporal)
         self.k = k                # Time horizon (number of time slices)
         self.separator = separator  # Separator used to distinguish variables across time slices
 
-    def _userToCodeName(self, name, time_slice):
+    def __userToCodeName__(self, name, time_slice):
         r"""
         Converts a user-friendly variable name to a code-friendly name.
 
@@ -33,7 +33,7 @@ class DynamicBayesNet:
         
         return f"{name}{self.separator}{time_slice}"
     
-    def _codeToUserName(self, name):
+    def __codeToUserName__(self, name):
         """
         Converts a code-friendly variable name to a user-friendly name. The name should be in the format: {string + separator + time_slice}.
 
@@ -60,10 +60,10 @@ class DynamicBayesNet:
         -------
             str: A string representation of the variable name.
         """
-        name, t = self._codeToUserName(var_name)
+        name, t = self.__codeToUserName__(var_name)
         return f"('{name}', {t})"
 
-    def _arcToString(self, tail, head):
+    def __arcToString__(self, tail, head):
         r"""
         Converts a pyAgrum type arc to a string representation.
         
@@ -119,7 +119,7 @@ class DynamicBayesNet:
 
         # Add the variable to all time slices
         for t in range(self.k):
-            var_name = self._userToCodeName(name, t)  # Format: {variable_name}#{time_slice}
+            var_name = self.__userToCodeName__(name, t)  # Format: {variable_name}#{time_slice}
             var = v.clone()
             var.setName(var_name)
             var.setDescription(f"{v.description()} (t={t})")
@@ -183,8 +183,8 @@ class DynamicBayesNet:
             raise ValueError(f"Arc spans more than {self.k} time slices.")
         
         # Convert the variable names to the format used in the DBN
-        var_name1 = self._userToCodeName(n1, t1)
-        var_name2 = self._userToCodeName(n2, t2)
+        var_name1 = self.__userToCodeName__(n1, t1)
+        var_name2 = self.__userToCodeName__(n2, t2)
         
         # Get the variable ids
         i1 = self.idFromName(var_name1)
@@ -193,7 +193,7 @@ class DynamicBayesNet:
         # Add the arc to the base network
         self.dBN.addArc(i1, i2)
         
-        print(f"Added arc {self._arcToString(i1, i2)} to the DBN.")
+        print(f"Added arc {self.__arcToString__(i1, i2)} to the DBN.")
 
     def arcs(self):
         r"""
@@ -210,7 +210,7 @@ class DynamicBayesNet:
 
         for arc in arcs:
             i1, i2 = arc
-            l_arcs.append(self._arcToString(i1, i2))
+            l_arcs.append(self.__arcToString__(i1, i2))
         
         return l_arcs
 
@@ -236,8 +236,8 @@ class DynamicBayesNet:
         n2, t2 = head
 
         # Construct the variable names for the given time slices
-        var1 = self._userToCodeName(n1, t1)
-        var2 = self._userToCodeName(n2, t2)
+        var1 = self.__userToCodeName__(n1, t1)
+        var2 = self.__userToCodeName__(n2, t2)
 
         i1 = self.idFromName(var1)
         i2 = self.idFromName(var2)
@@ -245,7 +245,7 @@ class DynamicBayesNet:
         # Remove the arc from the base network
         self.dBN.eraseArc(i1, i2)
 
-        print(f"Deleted arc {self._arcToString(i1, i2)} from the DBN.")       
+        print(f"Deleted arc {self.__arcToString__(i1, i2)} from the DBN.")       
 
     def erase(self, var):
         r"""
@@ -258,7 +258,7 @@ class DynamicBayesNet:
 
         # Delete the variable from all time slices
         for t in range(self.k):
-            var_name = self._userToCodeName(var, t)  # Format: {variable_name}#{time_slice}
+            var_name = self.__userToCodeName__(var, t)  # Format: {variable_name}#{time_slice}
             self.dBN.erase(var_name)  # Delete the variable from the base network
 
         self.variables.remove(var)  # Remove the variable from the set of variables
