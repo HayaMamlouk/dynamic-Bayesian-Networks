@@ -1,24 +1,25 @@
 import pyAgrum as gum
-import pydot as dot
-from pyAgrum.lib.notebook import showGraph
+import logging
 
-class DynamicBayesNet:
+logging.basicConfig(
+    filename='mylog.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+class dCommon:
     """
-    A class to represent and manipulate Dynamic Bayesian Networks (kTBNs).
-    This class extends the functionality of a standard Bayesian Network by incorporating
-    a temporal dimension, allowing the modeling of time-evolving systems.
+    A common class for Dynamic Bayesian Networks (DBNs) and Dynamic Tensors.
     """
 
-    def __init__(self, k, separator="#"):
+    def __init__(self, separator="#"):
         """
-        Initializes the kTBN object.
+        Initializes the dCommon object.
         """
-        self.kTBN = gum.BayesNet()  # The underlying Bayesian Network (pyAgrum.BayesNet)
-        self.variables = set()       # List of variables in the kTBN (atemporal)
-        self.k = k                # Time horizon (number of time slices)
-        self.separator = separator  # Separator used to distinguish variables across time slices
+        self.separator = separator
 
-    def __userToCodeName__(self, name, time_slice):
+    def _userToCodeName(self, name, time_slice):
         r"""
         Converts a user-friendly variable name to a code-friendly name.
 
@@ -32,12 +33,9 @@ class DynamicBayesNet:
         -------
             str: The code-friendly variable name.
         """
-        if self.separator in name:
-            raise ValueError(f"Variable name '{name}' contains the separator '{self.separator}'.")
-        
         return f"{name}{self.separator}{time_slice}"
     
-    def __codeToUserName__(self, name):
+    def _codeToUserName(self, name):
         """
         Converts a code-friendly variable name to a user-friendly name. The name should be in the format: {string + separator + time_slice}.
 
@@ -52,7 +50,7 @@ class DynamicBayesNet:
         split = name.split(self.separator)
         return split[0], split[1]
     
-    def __nameToString__(self, var_name):
+    def _nameToString(self, var_name):
         r"""
         Converts a variable name to a string representation. Name should be in the format: {string + separator + time_slice}.
 
@@ -64,10 +62,10 @@ class DynamicBayesNet:
         -------
             str: A string representation of the variable name.
         """
-        name, t = self.__codeToUserName__(var_name)
+        name, t = self._codeToUserName(var_name)
         return f"('{name}', {t})"
 
-    def __arcToString__(self, tail, head):
+    def _arcToString(self, tail, head):
         r"""
         Converts a pyAgrum type arc to a string representation.
         
@@ -85,11 +83,11 @@ class DynamicBayesNet:
             A string representation of the arc.
         """
 
-        return f"{self.__nameToString__(self.__nameFromId__(tail))} -> {self.__nameToString__(self.__nameFromId__(head))}"
-
-    def __nameFromId__(self, id):
+        return f"{self._nameToString(self.nameFromId(tail))} -> {self._nameToString(self.nameFromId(head))}"
+    
+    def nameFromId(self, id):
         r"""
-        Returns the name of a variable given its id.
+        Returns the internal name of a variable given its id.
 
         Parameters
         ----------
@@ -99,57 +97,9 @@ class DynamicBayesNet:
         Returns
         -------
         str
-            The name of the variable.
+            The internal name of the variable (shows separator).
         """
         return self.kTBN.variable(id).name()
-
-    def add(self, v):
-        r"""
-        Adds a variable to the kTBN across all time slices.
-
-        Parameters
-        ----------
-            v (pyAgrum.Variable): The variable to be added. This variable is created using one of pyAgrum's variable creation methods.
-        """
-
-        # Check if the variable is already in the kTBN
-        # if name in self.variables:
-        #     raise ValueError(f"Variable '{v.name()}' already exists in the kTBN.")
-        
-
-        # Extract the variable's name and description
-        name = v.name()
-        description = v.description()
-
-        # Add the variable to all time slices
-        for t in range(self.k):
-            var_name = self.__userToCodeName__(name, t)  # Format: {variable_name}#{time_slice} it checks if separator is in name
-            var = v.clone()
-            var.setName(var_name)
-            var.setDescription(f"{description} (t={t})")
-
-            self.kTBN.add(var)  # Add to the base network
-
-        # Add the variable to the set of variables
-        self.variables.add(name)
-
-        print(f"Added variable '{v.name()}' across {self.k} time slices.")
-
-    def addFast(self, var_description):
-        r"""
-        Adds a variable to the kTBN across all time slices. This method uses fast syntax to add a variable in the dbn.
-
-        Parameters
-        ----------
-            var_description (str): String following fast syntax description.
-            domaine (int): The domain size of the variable (default: 2).
-        """
-
-        # Create the variable
-        var = gum.fastVariable(var_description)
-
-        # Add the variable to the kTBN
-        self.add(var)
 
     def idFromName(self, var):
         r"""
@@ -177,8 +127,77 @@ class DynamicBayesNet:
 
         """
         n, t = var
-        name = self.__userToCodeName__(n, t)
+        name = self._userToCodeName(n, t)
         return self.kTBN.idFromName(name)
+    
+
+class DynamicBayesNet(dCommon):
+    """
+    A class to represent and manipulate Dynamic Bayesian Networks (kTBNs).
+    This class extends the functionality of a standard Bayesian Network by incorporating
+    a temporal dimension, allowing the modeling of time-evolving systems.
+    """
+
+    def __init__(self, k, separator="#"):
+        """
+        Initializes the kTBN object.
+        """
+        self.kTBN = gum.BayesNet()  # The underlying Bayesian Network (pyAgrum.BayesNet)
+        self.variables = set()       # List of variables in the kTBN (atemporal)
+        self.k = k                # Time horizon (number of time slices)
+        super().__init__(separator)
+    
+    def add(self, v):
+        r"""
+        Adds a variable to the kTBN across all time slices.
+
+        Parameters
+        ----------
+            v (pyAgrum.Variable): The variable to be added. This variable is created using one of pyAgrum's variable creation methods.
+        """
+
+        # Check if the variable is already in the kTBN
+        # if name in self.variables:
+        #     raise ValueError(f"Variable '{v.name()}' already exists in the kTBN.")
+
+        
+        # Extract the variable's name and description
+        name = v.name()
+        description = v.description()
+
+        # Check if the variable name contains the separator
+        if self.separator in name:
+            raise ValueError(f"Variable name '{name}' contains the separator '{self.separator}'.")
+
+        # Add the variable to all time slices
+        for t in range(self.k):
+            var_name = super()._userToCodeName(name, t)  # Format: {variable_name}#{time_slice} it checks if separator is in name
+            var = v.clone()
+            var.setName(var_name)
+            var.setDescription(f"{description} (t={t})")
+
+            self.kTBN.add(var)  # Add to the base network
+
+        # Add the variable to the set of variables
+        self.variables.add(name)
+
+        logger.info(f"Added variable '{v.name()}' across {self.k} time slices.")
+
+    def addFast(self, var_description):
+        r"""
+        Adds a variable to the kTBN across all time slices. This method uses fast syntax to add a variable in the dbn.
+
+        Parameters
+        ----------
+            var_description (str): String following fast syntax description.
+            domaine (int): The domain size of the variable (default: 2).
+        """
+
+        # Create the variable
+        var = gum.fastVariable(var_description)
+
+        # Add the variable to the kTBN
+        self.add(var)
 
     def addArc(self, tail, head):
         r"""
@@ -210,7 +229,7 @@ class DynamicBayesNet:
         # Add the arc to the base network
         self.kTBN.addArc(i1, i2)
         
-        print(f"Added arc {self.__arcToString__(i1, i2)} to the kTBN.")
+        logger.info(f"Added arc {self._arcToString(i1, i2)} to the kTBN.")
 
     def arcs(self):
         r"""
@@ -227,7 +246,7 @@ class DynamicBayesNet:
 
         for arc in arcs:
             i1, i2 = arc
-            l_arcs.append(self.__arcToString__(i1, i2))
+            l_arcs.append(self._arcToString(i1, i2))
         
         return l_arcs
 
@@ -254,7 +273,7 @@ class DynamicBayesNet:
         # Remove the arc from the base network
         self.kTBN.eraseArc(i1, i2)
 
-        print(f"Deleted arc {self.__arcToString__(i1, i2)} from the kTBN.")       
+        logger.info(f"Deleted arc {self._arcToString(i1, i2)} from the kTBN.")       
 
     def erase(self, var):
         r"""
@@ -267,64 +286,15 @@ class DynamicBayesNet:
 
         # Delete the variable from all time slices
         for t in range(self.k):
-            var_name = self.__userToCodeName__(var, t)  # Format: {variable_name}#{time_slice}
+            var_name = super()._userToCodeName(var, t)  # Format: {variable_name}#{time_slice}
             self.kTBN.erase(var_name)  # Delete the variable from the base network
 
         self.variables.remove(var)  # Remove the variable from the set of variables
 
-        print(f"Deleted variable '{var}' and its associated arcs from the kTBN.")
+        logger.info(f"Deleted variable '{var}' and its associated arcs from the kTBN.")
 
-    def showKTBN(self):
-        """
-        Displays the kTBN.
-        """
-        return self.kTBN
     
 
-    def dbn_to_dot(self):
-        """
-        Convert a dynamic Bayesian network (dbn) to a DOT graph,
-        using the custom string representation for nodes and arcs.
-        """
-        # Create a DOT graph with some layout properties.
-        g = dot.Dot(graph_type='digraph')
-        g.set_rankdir("LR")
-        g.set_splines("ortho")
-        g.set_node_defaults(color="#000000", fillcolor="white", style="filled")
-        
-        # Add nodes using the custom label from nameToString.
-        for node in self.kTBN.nodes():
-            var = self.kTBN.variable(node)
-            node_str = self.__nameToString__(var.name())
-            g.add_node(dot.Node(node_str, label=node_str))
-        
-        # Add edges using the transformed names.
-        g.set_edge_defaults(color="blue", constraint="False")
-        for tail, head in self.kTBN.arcs():
-            # The arc is drawn between nodes that already use the custom names.
-            tail_str = self.__nameToString__(self.kTBN.variable(tail).name())
-            head_str = self.__nameToString__(self.kTBN.variable(head).name())
-            g.add_edge(dot.Edge(tail_str, head_str))
-        
-        return g
-
-    def showDBN(self, size=None):
-        """
-        Display a dynamic Bayesian network using the custom DOT graph format.
-        
-        Parameters
-        ----------
-        bn : pyAgrum.BayesNet
-            The Bayesian network to display.
-        size : int or str, optional
-            The figure size (default is taken from gum.config if not provided).
-        """
-        if size is None:
-            size = gum.config["dynamicBN", "default_graph_size"]
-        dot_graph = self.dbn_to_dot()
-        showGraph(dot_graph, size)
-
-  
    
 
 
