@@ -1,8 +1,7 @@
 from pyAgrum.lib.notebook import showGraph
 import pydot as dot 
-from pyAgrum.lib.dynamicBN import getTimeSlicesRange, noTimeCluster, _isInNoTimeSlice
-import pyAgrum as gum
-from DynamicBayesNet import DynamicBayesNet
+from pyAgrum.lib.dynamicBN import getTimeSlicesRange, noTimeCluster
+import copy
 
 def showKTBN(dbn):
     """
@@ -86,3 +85,58 @@ def showTimeSlices(dbn):
         The dynamic Bayesian network to display.
     """
     return showGraph(_TimeSlicesToDot(dbn))
+
+
+def unrollKTBN(dbn, nbr):
+    """
+    Unrolls a dynamic Bayesian network into a static Bayesian network.
+
+    Parameters
+    ----------
+    dbn : pyAgrum.DynamicBayesNet
+        The dynamic Bayesian network to unroll.
+
+    nbr : int
+        The total number of time slices to unroll.
+
+    Returns
+    -------
+    pyAgrum.BayesNet
+        The unrolled Bayesian network.
+    """  
+    k = dbn.k
+    
+    if nbr < k:
+        raise ValueError("The number of time slices to unroll must be greater than or equal to the current number of time slices.")
+    
+    # Create a deep copy of the current time-slice network
+    bn = copy.deepcopy(dbn.kTBN)
+    
+    # Add variables for the new time slices
+    for var_name in dbn.variables:
+        for time_slice in range(k, nbr):
+            bn.add(dbn._userToCodeName(var_name, time_slice))
+    
+    # Add arcs for variables whose head is in the last original time slice (k-1)
+    for arc in dbn.kTBN.arcs():
+        tail_code, head_code = arc
+        
+        # Get the user names and time slices for the head variable
+        head_user = dbn._codeToUserName(dbn.kTBN.variable(head_code).name())
+        head_name, head_ts = head_user[0], int(head_user[1])
+        
+        if head_ts == k - 1:
+            # Get the tail variable info
+            tail_user = dbn._codeToUserName(dbn.kTBN.variable(tail_code).name())
+            tail_name, tail_ts = tail_user[0], int(tail_user[1])
+            
+            # Create new arcs for the unrolled slices
+            for i in range(k + 1, nbr + 1):
+                new_tail = dbn._userToCodeName(tail_name, tail_ts + i - k)
+                new_head = dbn._userToCodeName(head_name, head_ts + i - k)
+                bn.addArc(new_tail, new_head)
+
+                # manipiulate 
+    
+    return bn
+
