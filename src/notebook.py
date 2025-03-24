@@ -104,39 +104,87 @@ def unrollKTBN(dbn, nbr):
     pyAgrum.BayesNet
         The unrolled Bayesian network.
     """  
+    # Check that the number of time slices to unroll is greater than the current number of time slices.
     k = dbn.k
-    
     if nbr < k:
         raise ValueError("The number of time slices to unroll must be greater than or equal to the current number of time slices.")
     
     # Create a deep copy of the current time-slice network
     bn = copy.deepcopy(dbn.kTBN)
     
-    # Add variables for the new time slices
+    # Add variables for the new time slices.
     for var_name in dbn.variables:
         for time_slice in range(k, nbr):
             bn.add(dbn._userToCodeName(var_name, time_slice))
     
-    # Add arcs for variables whose head is in the last original time slice (k-1)
+    # -----------------------------------------------------------------------
+    # Collect information on arcs from the original network.
+    # For every arc in dbn.kTBN where the head is in the last original time slice (k-1):
+    #   - Record the head variable base name (for later CPT updates)
+    #   - Record the tail information as a tuple: (tail_base, tail_diff)
+    #
+    # Here, tail_diff = (head_time - tail_time). For example, if we have an arc from a#1 to b#2,
+    # then tail_diff is 2 - 1 = 1.
+    # -----------------------------------------------------------------------
+    head_vars = set()
+    tails = {}  # mapping: head_base -> set of tuples (tail_base, tail_diff)
+    
     for arc in dbn.kTBN.arcs():
         tail_code, head_code = arc
         
-        # Get the user names and time slices for the head variable
+        # Extract the base name and time slice of the head variable.
         head_user = dbn._codeToUserName(dbn.kTBN.variable(head_code).name())
-        head_name, head_ts = head_user[0], int(head_user[1])
+        head_base, head_ts = head_user[0], int(head_user[1])
         
+        # Check if the head variable is in the last original time slice.
         if head_ts == k - 1:
-            # Get the tail variable info
-            tail_user = dbn._codeToUserName(dbn.kTBN.variable(tail_code).name())
-            tail_name, tail_ts = tail_user[0], int(tail_user[1])
-            
-            # Create new arcs for the unrolled slices
-            for i in range(k + 1, nbr + 1):
-                new_tail = dbn._userToCodeName(tail_name, tail_ts + i - k)
-                new_head = dbn._userToCodeName(head_name, head_ts + i - k)
-                bn.addArc(new_tail, new_head)
 
-                # manipiulate 
+            # used later for CPT update
+            head_vars.add(head_base)
+            if head_base not in tails:
+                tails[head_base] = set()
+
+            # Extract the base name and time slice of the tail variable.
+            tail_user = dbn._codeToUserName(dbn.kTBN.variable(tail_code).name())
+            tail_base, tail_ts = tail_user[0], int(tail_user[1])
+
+            # Calculate the difference in time slices between the head and tail variables. Use later for CPT update.
+            tail_diff = head_ts - tail_ts  # difference in time slices between head and tail
+            tails[head_base].add((tail_base, tail_diff)) 
+            
+            # Extend the arc into the new time slices.
+            for i in range(k + 1, nbr + 1):
+                new_tail = dbn._userToCodeName(tail_base, tail_ts + i - k)
+                new_head = dbn._userToCodeName(head_base, head_ts + i - k)
+                bn.addArc(new_tail, new_head)
+    
+    # -----------------------------------------------------------------------
+    # Update the CPTs for the new head variable instances.
+    # For each head variable base that we recorded:
+    #   For each new time slice t (from k to nbr-1), copy its CPT from the previous time slice
+    #   and update the tail variables in the CPT.
+    #
+    # The mapping for fillWith is built as follows:
+    #   - Map the new head variable (e.g. "B#3") to its previous version (e.g. "B#2").
+    #   - For each tail feeding into it (e.g. from "A"), if tail_diff = d then for the new head at time t,
+    #     we map the new tail (which is "A#t" if d==1, or "A#(t - d + 1)" in general) to its previous instance.
+    #     Here we assume that the correct relation is:
+    #         new tail at time t: dbn._userToCodeName(tail_base, t - d)
+    #         previous tail:    dbn._userToCodeName(tail_base, t - d - 1)
+    # -----------------------------------------------------------------------
+    for head_base in head_vars:
+        for t in range(k, nbr):
+            new_head = dbn._userToCodeName(head_base, t)
+            prev_head = dbn._userToCodeName(head_base, t - 1)
+            
+            # Build the mapping for the CPT update.
+            mapping = { new_head: prev_head }
+            for (tail_base, tail_diff) in tails[head_base]:
+                # For the new head at time t, the tail variable appears at time: t - tail_diff.
+                new_tail = dbn._userToCodeName(tail_base, t - tail_diff)
+                prev_tail = dbn._userToCodeName(tail_base, t - tail_diff - 1)
+                mapping[new_tail] = prev_tail
+        
+            bn.cpt(new_head).fillWith(bn.cpt(prev_head), mapping)
     
     return bn
-
