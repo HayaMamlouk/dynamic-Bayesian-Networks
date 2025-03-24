@@ -83,9 +83,9 @@ class dCommon:
             A string representation of the arc.
         """
 
-        return f"{self._nameToString(self.nameFromId(tail))} -> {self._nameToString(self.nameFromId(head))}"
+        return f"{self._nameToString(self._internalNameFromId(tail))} -> {self._nameToString(self._internalNameFromId(head))}"
     
-    def nameFromId(self, id):
+    def _internalNameFromId(self, id):
         r"""
         Returns the internal name of a variable given its id.
 
@@ -100,6 +100,22 @@ class dCommon:
             The internal name of the variable (shows separator).
         """
         return self.kTBN.variable(id).name()
+    
+    def nameFromId(self, id):
+        r"""
+        Returns the name of a variable given its id.
+
+        Parameters
+        ----------
+        id : int
+            The id of the variable.
+        
+        Returns
+        -------
+        str
+            The name of the variable.
+        """
+        return self._codeToUserName(self._internalNameFromId(id))
 
     def idFromName(self, var):
         r"""
@@ -108,7 +124,7 @@ class dCommon:
 
         Parameters
         ----------
-        name : str
+        name : tuple
         	The variable's name from which the id is returned.
 
         Notes

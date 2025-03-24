@@ -1,7 +1,8 @@
 from pyAgrum.lib.notebook import showGraph
 import pydot as dot 
-from pyAgrum.lib.dynamicBN import getTimeSlicesRange, noTimeCluster
+from pyAgrum.lib.dynamicBN import getTimeSlicesRange, noTimeCluster, _isInNoTimeSlice
 import pyAgrum as gum
+from DynamicBayesNet import DynamicBayesNet
 
 def showKTBN(dbn):
     """
