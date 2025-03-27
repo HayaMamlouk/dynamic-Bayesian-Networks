@@ -309,12 +309,113 @@ class DynamicBayesNet(dCommon):
 
         logger.info(f"Deleted variable '{var}' and its associated arcs from the kTBN.")
 
+    def cpt(self, var):
+        r"""
+        Returns the Conditional Probability Table (CPT) of a variable.
+
+        Parameters
+        ----------
+            var (tuple): The name and time slice of the variable.
+
+        Returns
+        -------
+            pyAgrum.Potential: The CPT of the variable.
+        """
+        name, ts = var
+        raw_potential = self.kTBN.cpt(self._userToCodeName(name, ts))
+        return dPotential(raw_potential, self.separator)
+
+class dPotential(dCommon):
+    """
+    A wrapper for a pyAgrum.Potential object that exposes a user-friendly
+    interface using tuple-based variable identifiers (e.g., ('A', 1))
+    instead of the internal string format (e.g., 'A#1').
     
+    Inherits from dCommon to directly access name conversion functions.
+    """
+    def __init__(self, potential, separator="#"):
+        """
+        Parameters
+        ----------
+        potential : pyAgrum.Potential
+            The underlying potential (CPT) from pyAgrum.
+        separator : str, optional
+            The separator used for variable names, by default "#".
+        """
+        super().__init__(separator)
+        self._potential = potential
 
-   
+    def __getitem__(self, key):
+        """
+        Allows user-friendly indexing of the potential.
+        For example: dBN.cpt(('A', 1))[{('B', 0): 1}]
+        """
+        if isinstance(key, dict):
+            internal_key = {}
+            for var, state in key.items():
+                if isinstance(var, tuple):
+                    # Convert tuple ('B', 0) to "B#0"
+                    internal_key[self._userToCodeName(var[0], var[1])] = state
+                else:
+                    raise ValueError(f"Invalid key format: {var}")
+            key = internal_key
+        return self._potential[key]
+
+    def __setitem__(self, key, value):
+        """
+        Allows setting values in the potential using user-friendly keys.
+        For example: dBN.cpt(('A', 1))[{('B', 0): 1}] = some_value
+        """
+        if isinstance(key, dict):
+            internal_key = {}
+            for var, state in key.items():
+                if isinstance(var, tuple):
+                    internal_key[self._userToCodeName(var[0], var[1])] = state
+                else:
+                    raise ValueError(f"Invalid key format: {var}")
+            key = internal_key
+        self._potential[key] = value
+
+    def fillWith(self, value):
+        """
+        Fills the potential with a constant or with a list of values.
+        
+        Parameters
+        ----------
+        value : int, float, or list
+            - If a constant, fills the entire potential with that constant.
+            - If a list, it is assumed to be a flattened version of the potential.
+              The length of the list must match the number of cells in the potential.
+        """
+        # if isinstance(value, (int, float)):
+        #     self._potential.fillWith(value)
+        # elif isinstance(value, list):
+        #    self._potential.
+
+
+    
+    
+    # def __str__(self):
+    #     """
+    #     Returns a user-friendly string representation of the potential.
+    #     """
+    #     out = "User-Friendly Potential:\n"
+    #     try:
+    #         configurations = self._potential.allConfigurations()
+    #     except AttributeError:
+    #         configurations = []
+    #     for config in configurations:
+    #         friendly_config = {
+    #             self._codeToUserName(var): state
+    #             for var, state in config.items()
+    #         }
+    #         # Assuming potential.names() returns variables in order.
+    #         state_tuple = tuple(config[var] for var in self._potential.names())
+    #         prob = self._potential[state_tuple]
+    #         out += f"{friendly_config} : {prob}\n"
+    #     return out
 
 
 
 
-
-
+    
