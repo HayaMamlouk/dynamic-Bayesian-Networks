@@ -1,4 +1,5 @@
 from pyAgrum.lib.notebook import showGraph
+import pyAgrum as gum
 import pydot as dot 
 from pyAgrum.lib.dynamicBN import getTimeSlicesRange, noTimeCluster
 import copy
@@ -188,3 +189,42 @@ def unrollKTBN(dbn, nbr):
             bn.cpt(new_head).fillWith(bn.cpt(prev_head), mapping)
     
     return bn
+
+def showCPT(dbn, var):
+    """
+    Display the conditional probability table (CPT) of a variable in a dynamic Bayesian network.
+
+    Parameters
+    ----------
+    dbn : pyAgrum.DynamicBayesNet
+        The dynamic Bayesian network containing the variable.
+
+    var : str
+        The name of the variable whose CPT to display.
+    """
+    # Get pyAgrum.Potential CPT table of the variable
+    cpt = dbn.cpt(var)._potential
+    
+    # Create a new Potential with user-friendly variable names
+    userCPT = gum.Potential()
+    
+    # Get the list of variables in the CPT
+    internalVariables = cpt.variablesSequence()
+
+    # Create a mapping from user-friendly variable names to internal variable names
+    mapping = {}
+
+    for v in internalVariables:
+        # Create a new variable with a user-friendly name and put it into the new CPT
+        userVar = v.clone()
+        userVar.setName(dbn._nameToString(v.name()))
+
+        userCPT.add(userVar)
+        mapping[userVar.name()] = v.name()
+
+    # bn.cpt(new_head).fillWith(bn.cpt(prev_head), mapping)
+    userCPT.fillWith(cpt, mapping)
+    return userCPT
+
+    # Create a new Potential with user-friendly variable names
+    
