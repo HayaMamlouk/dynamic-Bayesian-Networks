@@ -387,33 +387,14 @@ class dPotential(dCommon):
             - If a list, it is assumed to be a flattened version of the potential.
               The length of the list must match the number of cells in the potential.
         """
-        # if isinstance(value, (int, float)):
-        #     self._potential.fillWith(value)
-        # elif isinstance(value, list):
-        #    self._potential.
+        self._potential.fillWith(value)
 
 
-    
-    
-    # def __str__(self):
-    #     """
-    #     Returns a user-friendly string representation of the potential.
-    #     """
-    #     out = "User-Friendly Potential:\n"
-    #     try:
-    #         configurations = self._potential.allConfigurations()
-    #     except AttributeError:
-    #         configurations = []
-    #     for config in configurations:
-    #         friendly_config = {
-    #             self._codeToUserName(var): state
-    #             for var, state in config.items()
-    #         }
-    #         # Assuming potential.names() returns variables in order.
-    #         state_tuple = tuple(config[var] for var in self._potential.names())
-    #         prob = self._potential[state_tuple]
-    #         out += f"{friendly_config} : {prob}\n"
-    #     return out
+    def __str__(self):
+        """
+        Returns a user-friendly string representation of the potential.
+        """
+        return str(self._potential)
 
 
 
