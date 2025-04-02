@@ -324,6 +324,12 @@ class DynamicBayesNet(dCommon):
         name, ts = var
         raw_potential = self.kTBN.cpt(self._userToCodeName(name, ts))
         return dPotential(raw_potential, self.separator)
+    
+    def generateCPTs(self) :
+        r"""
+        Randomly generates CPTs for a given structure.
+        """
+        return self.kTBN.generateCPTs()
 
 class dPotential(dCommon):
     """

@@ -1,9 +1,10 @@
 from pyAgrum.lib.notebook import showGraph
 import pyAgrum as gum
 import pydot as dot 
-from pyAgrum.lib.dynamicBN import getTimeSlicesRange, noTimeCluster
-import copy
+from pyAgrum.lib.dynamicBN import getTimeSlicesRange, noTimeCluster, Rectangle
+import numpy as np
 import pyAgrum.lib.notebook as gnb 
+from matplotlib import pyplot as plt
 
 def _kTBNToDot(dbn):
     """
@@ -178,7 +179,11 @@ def unrollKTBN(dbn, nbr):
         for var in dbn.variables:
             # Create the new instance for this variable.
             new_var = dbn._userToCodeName(var, t)
-            bn.add(new_var)
+            # Retrieve a template instance to copy its domain.
+            template_var = bn.variable(dbn._userToCodeName(var, 0))
+            new_label_var = gum.LabelizedVariable(new_var, new_var, template_var.domainSize())
+            bn.add(new_label_var)
+
             
             # Use the template instance (in the last time slice of the template) to retrieve parent info.
             template_node = dbn._userToCodeName(var, k - 1)
@@ -247,28 +252,93 @@ def showCPT(dbn, var):
 
 flow = gnb.FlowLayout()
 
-# def getPosterior(bn, evs, target):
-#     """
-#     shortcut for proba2histo(gum.getPosterior(bn,evs,target))
+def getPosterior(bn, evs, target):
+    """
+    shortcut for proba2histo(gum.getPosterior(bn,evs,target))
 
-#     Parameters
-#     ----------
-#     bn: "pyAgrum.BayesNet"
-#         the BayesNet
-#     evs: Dict[(str, int):int|str|List[float]]
-#         map of evidence
-#     target: (str, int) user friendly format
-#         name of target variable
+    Parameters
+    ----------
+    bn: "pyAgrum.BayesNet"
+        the BayesNet
+    evs: Dict[(str, int):int|str|List[float]]
+        map of evidence
+    target: (str, int) user friendly format
+        name of target variable
 
-#     Returns
-#     ------
-#         the matplotlib graph
-#     """
-#         # we want to transform for target (str, int) to (strint)
-#     raw_target = target[0] + "#" + str(target[1])
-#     raw_evs = {}
-#     for k, v in evs.items():
-#         raw_evs[k[0] + "#" + str(k[1])] = v
+    Returns
+    ------
+        the matplotlib graph
+    """
+        # we want to transform for target (str, int) to (strint)
+    raw_target = target[0] + str(target[1])
+    raw_evs = {}
+    for k, v in evs.items():
+        raw_evs[k[0] + str(k[1])] = v
 
-#     return gnb.getPosterior(bn, evs=raw_evs, target=raw_target)
+    return gnb.getPosterior(bn, evs=raw_evs, target=raw_target)
+
+def plotFollow(lovars, kTBN, T, evs):
+  """
+  plots modifications of variables in a kTBN knowing the size of the time window (T) and the evidence on the sequence.
+
+  :param lovars: list of variables to follow
+  :param twoTdbn: the kTBN
+  :param T: the time range
+  :param evs: observations
+  """
+  # variables input as atemporal so no need to change
+  raw_evs = {}
+  for key, value in evs.items():
+    raw_evs[key[0] +"#"+ str(key[1])] = value
+    plotFollowUnrolled(lovars, unrollKTBN(kTBN, T), T, raw_evs)
+
+def plotFollowUnrolled(lovars, dbn, T, evs, vars_title=None):
+  """
+  plot the dynamic evolution of a list of vars with a dBN
+
+  :param lovars: list of variables to follow
+  :param dbn: the unrolled dbn
+  :param T: the time range
+  :param evs: observations
+  :param vars_title: string for default or a dictionary with the variable name as key and the respective title as value.
+  """
+  ie = gum.LazyPropagation(dbn)
+  ie.setEvidence(evs)
+  ie.makeInference()
+
+  x = np.arange(T)
+
+  for var in lovars:
+    v0 = dbn.variableFromName(var + "#0")
+    lpots = []
+    for i in range(v0.domainSize()):
+      serie = []
+      for t in range(T):
+        serie.append(ie.posterior(dbn.idFromName(var + "#" + str(t)))[i])
+      lpots.append(serie)
+
+    _, ax = plt.subplots()
+    plt.xlim(left=0, right=T - 1)
+    plt.ylim(top=1, bottom=0)
+    ax.xaxis.grid()
+
+    # Setting a customized title
+    if vars_title is None:
+      plt.title(f"Following variable {var}", fontsize=20)
+    elif len(vars_title) != 0:
+      plt.title(vars_title[var], fontsize=20)
+    else:
+      raise TypeError("Incorrect format of the plots title dictionary")
+
+    plt.xlabel('time')
+
+    stack = ax.stackplot(x, lpots)
+
+    proxy_rects = [Rectangle((0, 0), 1, 1, fc=pc.get_facecolor()[0])
+                   for pc in stack]
+    labels = [v0.label(i) for i in range(v0.domainSize())]
+    plt.legend(proxy_rects, labels, loc='center left',
+               bbox_to_anchor=(1, 0.5), ncol=1, fancybox=True, shadow=True
+               )
+
 
