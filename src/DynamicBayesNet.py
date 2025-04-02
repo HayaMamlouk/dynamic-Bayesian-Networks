@@ -394,7 +394,29 @@ class dPotential(dCommon):
         """
         Returns a user-friendly string representation of the potential.
         """
-        return str(self._potential)
+        # Get pyAgrum.Potential CPT table of the variable
+        cpt = self._potential
+        
+        # Create a new Potential with user-friendly variable names
+        userCPT = gum.Potential()
+        
+        # Get the list of variables in the CPT
+        internalVariables = cpt.variablesSequence()
+
+        # Create a mapping from user-friendly variable names to internal variable names
+        mapping = {}
+
+        for v in internalVariables:
+            # Create a new variable with a user-friendly name and put it into the new CPT
+            userVar = v.clone()
+            userVar.setName(self._nameToString(v.name()))
+
+            userCPT.add(userVar)
+            mapping[userVar.name()] = v.name()
+
+        # bn.cpt(new_head).fillWith(bn.cpt(prev_head), mapping)
+        userCPT.fillWith(cpt, mapping)
+        return userCPT.__str__()
 
 
 
