@@ -5,6 +5,7 @@ from pyAgrum.lib.dynamicBN import getTimeSlicesRange, noTimeCluster, Rectangle
 import numpy as np
 import pyAgrum.lib.notebook as gnb 
 from matplotlib import pyplot as plt
+import pyAgrum.lib.proba_histogram as ph
 
 def _kTBNToDot(dbn):
     """
@@ -201,7 +202,7 @@ def unrollKTBN(dbn, nbr):
                 d = (k - 1) - parent_ts
                 # The corresponding parent for the new time slice is at time: t - d.
                 parent_new = dbn._userToCodeName(parent_base, t - d)
-                print(f"Adding arc from {parent_new} to {new_var}")
+                # print(f"Adding arc from {parent_new} to {new_var}")
                 bn.addArc(parent_new, new_var)
 
                 # Build the mapping for the CPT update:
@@ -252,6 +253,22 @@ def showCPT(dbn, var):
 
 flow = gnb.FlowLayout()
 
+def _myTitleHisto(p, show_mu_sigma=True):
+  var = p.variable(0)
+  name, time_slice = var.name().split("#")
+  var_name = name, int(time_slice)
+
+  if var.varType() == 1 or not show_mu_sigma:  # type=1 is for gum.LabelizedVariable
+    return var_name
+
+  (mu, std) = ph._stats(p)
+  if std == 0.0:
+    return var_name
+  else:
+    return f"{var_name}\n$\\mu={mu:.2f}$; $\\sigma={std:.2f}$"
+  
+ph._getTitleHisto = _myTitleHisto
+
 def getPosterior(bn, evs, target):
     """
     shortcut for proba2histo(gum.getPosterior(bn,evs,target))
@@ -270,10 +287,10 @@ def getPosterior(bn, evs, target):
         the matplotlib graph
     """
         # we want to transform for target (str, int) to (strint)
-    raw_target = target[0] + "#" +str(target[1])
+    raw_target = target[0] + "#" + str(target[1])
     raw_evs = {}
     for k, v in evs.items():
-        raw_evs[k[0] + str(k[1])] = v
+        raw_evs[k[0] + "#" + str(k[1])] = v
 
     return gnb.getPosterior(bn, evs=raw_evs, target=raw_target)
 
