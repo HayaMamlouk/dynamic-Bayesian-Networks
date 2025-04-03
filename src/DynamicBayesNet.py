@@ -415,7 +415,8 @@ class dPotential(dCommon):
         for v in internalVariables:
             # Create a new variable with a user-friendly name and put it into the new CPT
             userVar = v.clone()
-            userVar.setName(self._nameToString(v.name()))
+            letter, t = v.name().split(self.separator)
+            userVar.setName(t + "," + letter)
 
             userCPT.add(userVar)
             mapping[userVar.name()] = v.name()

@@ -290,7 +290,8 @@ def plotFollow(lovars, kTBN, T, evs):
   raw_evs = {}
   for key, value in evs.items():
     raw_evs[key[0] +"#"+ str(key[1])] = value
-    plotFollowUnrolled(lovars, unrollKTBN(kTBN, T), T, raw_evs)
+
+  plotFollowUnrolled(lovars, unrollKTBN(kTBN, T), T, raw_evs)
 
 def plotFollowUnrolled(lovars, dbn, T, evs, vars_title=None):
   """
