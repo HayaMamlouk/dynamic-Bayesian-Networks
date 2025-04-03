@@ -188,7 +188,8 @@ def unrollKTBN(dbn, nbr):
 
             
             # Use the template instance (in the last time slice of the template) to retrieve parent info.
-            template_node = dbn._userToCodeName(var, k - 1)
+            template_node = dbn._userToCodeName(var, k - 1)         # Template node
+            mapping = { new_var: dbn._userToCodeName(var, t - 1) }  # Mapping for CPT update
             for parent in bn.parents(template_node):
                 # Decode the parent's base name and its time slice from the template.
                 parent_user = dbn._codeToUserName(bn.variable(parent).name())
@@ -199,11 +200,9 @@ def unrollKTBN(dbn, nbr):
                 # The corresponding parent for the new time slice is at time: t - d.
                 parent_new = dbn._userToCodeName(parent_base, t - d)
                 bn.addArc(parent_new, new_var)
-            
-            # Build the mapping for the CPT update:
-            #   - Map the new variable to its previous instance.
-            mapping = { new_var: dbn._userToCodeName(var, t - 1) }
-            for parent in bn.parents(template_node):
+
+                # Build the mapping for the CPT update:
+                # - Map the new variable to its previous instance.
                 parent_user = dbn._codeToUserName(bn.variable(parent).name())
                 parent_base, parent_ts = parent_user[0], int(parent_user[1])
                 d = (k - 1) - parent_ts
