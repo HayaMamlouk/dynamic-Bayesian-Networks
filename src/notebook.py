@@ -132,7 +132,7 @@ def _TimeSlicesToDot(bn):
 
 def showUnrolled(dbn, size=None):
   """
-  Try to correctly an unrolled BN (user friendly)
+  Try to show correctly an unrolled BN (user friendly)
 
   Parameters
   ----------
@@ -181,8 +181,10 @@ def unrollKTBN(dbn, nbr):
             new_var = dbn._userToCodeName(var, t)
             # Retrieve a template instance to copy its domain.
             template_var = bn.variable(dbn._userToCodeName(var, 0))
-            new_label_var = gum.LabelizedVariable(new_var, new_var, template_var.domainSize())
-            bn.add(new_label_var)
+            new_label_var = template_var.clone()
+            new_label_var.setName(new_var)
+            new_label_var.setDescription(f"{template_var.description()} (t={t})")
+            bn.add(new_label_var) 
 
             
             # Use the template instance (in the last time slice of the template) to retrieve parent info.

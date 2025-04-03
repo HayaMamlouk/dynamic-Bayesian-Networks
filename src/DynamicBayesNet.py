@@ -323,7 +323,7 @@ class DynamicBayesNet(dCommon):
         """
         name, ts = var
         raw_potential = self.kTBN.cpt(self._userToCodeName(name, ts))
-        return dPotential(raw_potential, self.separator)
+        return dTensor(raw_potential, self.separator)
     
     def generateCPTs(self) :
         r"""
@@ -331,7 +331,7 @@ class DynamicBayesNet(dCommon):
         """
         return self.kTBN.generateCPTs()
 
-class dPotential(dCommon):
+class dTensor(dCommon):
     """
     A wrapper for a pyAgrum.Potential object that exposes a user-friendly
     interface using tuple-based variable identifiers (e.g., ('A', 1))
