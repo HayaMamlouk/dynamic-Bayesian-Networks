@@ -267,10 +267,10 @@ def getPosterior(bn, evs, target):
         the matplotlib graph
     """
         # we want to transform for target (str, int) to (strint)
-    raw_target = target[0] + str(target[1])
+    raw_target = target[0] +"#" + str(target[1])
     raw_evs = {}
     for k, v in evs.items():
-        raw_evs[k[0] + str(k[1])] = v
+        raw_evs[k[0] + "+" + str(k[1])] = v
 
     return gnb.getPosterior(bn, evs=raw_evs, target=raw_target)
 
