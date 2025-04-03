@@ -203,12 +203,8 @@ def unrollKTBN(dbn, nbr):
 
                 # Build the mapping for the CPT update:
                 # - Map the new variable to its previous instance.
-                parent_user = dbn._codeToUserName(bn.variable(parent).name())
-                parent_base, parent_ts = parent_user[0], int(parent_user[1])
-                d = (k - 1) - parent_ts
-                new_parent = dbn._userToCodeName(parent_base, t - d)
                 prev_parent = dbn._userToCodeName(parent_base, t - d - 1)
-                mapping[new_parent] = prev_parent
+                mapping[parent_new] = prev_parent
             
             # Copy the CPT from the previous time slice using the mapping.
             bn.cpt(new_var).fillWith(bn.cpt(dbn._userToCodeName(var, t - 1)), mapping)
