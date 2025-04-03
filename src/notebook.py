@@ -186,7 +186,9 @@ def unrollKTBN(dbn, nbr):
             new_label_var.setDescription(f"{template_var.description()} (t={t})")
             bn.add(new_label_var) 
 
-            
+        for var in dbn.variables:
+            new_var = dbn._userToCodeName(var, t)
+
             # Use the template instance (in the last time slice of the template) to retrieve parent info.
             template_node = dbn._userToCodeName(var, k - 1)         # Template node
             mapping = { new_var: dbn._userToCodeName(var, t - 1) }  # Mapping for CPT update
@@ -199,6 +201,7 @@ def unrollKTBN(dbn, nbr):
                 d = (k - 1) - parent_ts
                 # The corresponding parent for the new time slice is at time: t - d.
                 parent_new = dbn._userToCodeName(parent_base, t - d)
+                print(f"Adding arc from {parent_new} to {new_var}")
                 bn.addArc(parent_new, new_var)
 
                 # Build the mapping for the CPT update:
@@ -267,10 +270,10 @@ def getPosterior(bn, evs, target):
         the matplotlib graph
     """
         # we want to transform for target (str, int) to (strint)
-    raw_target = target[0] +"#" + str(target[1])
+    raw_target = target[0] + "#" +str(target[1])
     raw_evs = {}
     for k, v in evs.items():
-        raw_evs[k[0] + "+" + str(k[1])] = v
+        raw_evs[k[0] + str(k[1])] = v
 
     return gnb.getPosterior(bn, evs=raw_evs, target=raw_target)
 
