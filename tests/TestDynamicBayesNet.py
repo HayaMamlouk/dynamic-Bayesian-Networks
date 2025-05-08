@@ -1,7 +1,7 @@
 import unittest
 import pyAgrum as gum
 from src.DynamicBayesNet import DynamicBayesNet, dTensor
-from src.notebook import unrollKTBN, getPosterior
+from src.notebook import unrollKTBN, getPosterior, showCPT
 
 class TestDynamicBayesNet(unittest.TestCase):
 
@@ -92,7 +92,6 @@ class TestDynamicBayesNet(unittest.TestCase):
     #     dBN.add(a)
     #     dBN.generateCPTs()
 
-    #     from notebook import showCPT
     #     cpt = showCPT(dBN, ('A', 1))
     #     self.assertIn("('A'", str(cpt))  # formatted user name check
 
@@ -120,11 +119,10 @@ class TestDynamicBayesNet(unittest.TestCase):
         unrolled = unrollKTBN(dbn, 5)
         self.assertTrue(unrolled.exists("c#4"))
         self.assertTrue(unrolled.exists("d#3"))
-        self.assertGreaterEqual(len(unrolled.arcs()), 11)
+        self.assertEqual(len(unrolled.arcs()), 38)
 
 
     # def test_getPosterior_output(self):
-    #     from notebook import getPosterior
     
     #     dbn = DynamicBayesNet(3)
     #     a = gum.LabelizedVariable("A", "A", 2)
@@ -135,9 +133,44 @@ class TestDynamicBayesNet(unittest.TestCase):
     #     dbn.generateCPTs()
     
     #     bn = unrollKTBN(dbn, 3)
-    #     # We test that this function returns a matplotlib Figure object
+
     #     hist = getPosterior(bn, evs={}, target=("B", 1))
     #     self.assertTrue(hasattr(hist, "get_axes") or "Figure" in type(hist).__name__)
+
+    def test_different_seperator_than_default(self):
+        dBN = DynamicBayesNet(3, separator="|")
+        a = gum.LabelizedVariable("A", "A", 2)
+        b = gum.LabelizedVariable("B", "B", 2)
+        dBN.add(a)
+        dBN.add(b)
+        dBN.addArc(("A", 0), ("A", 1))
+        dBN.addArc(("B", 0), ("B", 1))
+        dBN.addArc(("A", 1), ("B", 2))
+        dBN.addArc(("B", 1), ("B", 2))
+        dBN.cpt(('B', 2)).fillWith([0.3333, 0.7777, 0.6, 0.4, 0.5, 0.5, 0.2, 0.8])
+        self.assertTrue("|" in dBN.kTBN.variable("A|1").name())
+        self.assertTrue("|" in dBN.kTBN.variable("B|1").name())
+        unrolled = unrollKTBN(dBN, 5)
+        # Check structure
+        self.assertTrue(unrolled.exists("A|4"))
+        self.assertTrue(unrolled.exists("B|4"))
+        # Check CPT propagation
+        val = unrolled.cpt("B|4")[{"B|3": 1}]
+        self.assertAlmostEqual(unrolled.cpt("B|4")[{"B|3": 1}].all(), unrolled.cpt("B|2")[{"B|1": 1}].all())
+        
+    def test_different_separator_in_cpt(self):
+        dBN = DynamicBayesNet(3, separator="|")
+        a = gum.LabelizedVariable("A", "A", 2)
+        b = gum.LabelizedVariable("B", "B", 2)
+        dBN.add(a)
+        dBN.add(b)
+        dBN.addArc(("A", 0), ("A", 1))
+        dBN.addArc(("B", 0), ("B", 1))
+        dBN.addArc(("A", 1), ("B", 2))
+        dBN.addArc(("B", 1), ("B", 2))
+        dBN.cpt(('B', 2)).fillWith([0.3333, 0.7777, 0.6, 0.4, 0.5, 0.5, 0.2, 0.8])
+        self.assertTrue("|" in dBN.kTBN.variable("A|1").name())
+        self.assertTrue("|" in dBN.kTBN.variable("B|1").name())
 
 
 if __name__ == "__main__":

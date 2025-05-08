@@ -7,6 +7,9 @@ import pyAgrum.lib.notebook as gnb
 from matplotlib import pyplot as plt
 import pyAgrum.lib.proba_histogram as ph
 
+_myTitleHisto_separator = "#"
+
+
 def _kTBNToDot(dbn):
     """
     Try to correctly represent dBN and kTBN in dot format.
@@ -265,7 +268,7 @@ flow = gnb.FlowLayout()
 
 def _myTitleHisto(p, show_mu_sigma=True):
   var = p.variable(0)
-  name, time_slice = var.name().split("#")
+  name, time_slice = var.name().split(_myTitleHisto_separator)
   var_name = name, int(time_slice)
 
   if var.varType() == 1 or not show_mu_sigma:  # type=1 is for gum.LabelizedVariable
@@ -296,6 +299,8 @@ def getPosterior(bn, evs, target):
     ------
         the matplotlib graph
     """
+    global _myTitleHisto_separator
+    _myTitleHisto_separator = bn.separator
     # we want to transform for target (str, int) to (strint)
     raw_target = target[0] + bn.separator + str(target[1])
     raw_evs = {}
@@ -337,7 +342,7 @@ def plotFollowUnrolled(lovars, dbn, T, evs, vars_title=None):
   x = np.arange(T)
 
   for var in lovars:
-    v0 = dbn.variableFromName(var + "#0")
+    v0 = dbn.variableFromName(var + dbn.separator + "0")
     lpots = []
     for i in range(v0.domainSize()):
       serie = []
