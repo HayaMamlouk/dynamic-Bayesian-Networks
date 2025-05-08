@@ -88,6 +88,7 @@ def _TimeSlicesToDot(bn):
   dbn: pyAgrum.BayesNet
         an unrolled BN
   """
+  separator = bn.separator
   timeslices = getTimeSlicesRange(bn)
   kts = sorted(timeslices.keys(), key=lambda x: -1 if x == noTimeCluster else 1e8 if x == 't' else int(x))
 
@@ -105,21 +106,21 @@ def _TimeSlicesToDot(bn):
     else:
       cluster = g  # small trick to add in graph variable in no timeslice
     for (n, label) in sorted(timeslices[k]):
-      letter, t = n.split("#")
+      letter, t = n.split(separator)
       composite_id = f"{letter}{t}" 
       cluster.add_node(dot.Node(composite_id, label=letter))
 
   g.set_edge_defaults(color="blue", constraint="False")
   for tail, head in bn.arcs():
-    tail_tuple = bn.variable(tail).name().split("#")
-    head_tuple = bn.variable(head).name().split("#")
+    tail_tuple = bn.variable(tail).name().split(separator)
+    head_tuple = bn.variable(head).name().split(separator)
     tail_id = f"{tail_tuple[0]}{tail_tuple[1]}"
     head_id = f"{head_tuple[0]}{head_tuple[1]}"
     g.add_edge(dot.Edge(tail_id, head_id))
 
   g.set_edge_defaults(style="invis", constraint="True")
   for x in timeslices["0"]:
-    name = x[1].split("#")[0]
+    name = x[1].split(separator)[0]
     prec = None
     for k in kts:
       if k == noTimeCluster:
@@ -212,7 +213,8 @@ def unrollKTBN(dbn, nbr):
             
             # Copy the CPT from the previous time slice using the mapping.
             bn.cpt(new_var).fillWith(bn.cpt(dbn._userToCodeName(var, t - 1)), mapping)
-    
+
+    bn.separator = dbn.separator
     return bn
 
 def showCPT(dbn, var):
@@ -242,8 +244,16 @@ def showCPT(dbn, var):
     for v in internalVariables:
         # Create a new variable with a user-friendly name and put it into the new CPT
         userVar = v.clone()
-        userVar.setName(dbn._nameToString(v.name()))
+        letter, t = v.name().split(dbn.separator)
 
+        if dbn.name_display_mode == "compact":
+            new_name = f"{letter},{t}"
+        elif dbn.name_display_mode == "reverse":
+            new_name = f"{t},{letter}"
+        elif dbn.name_display_mode == "classic":
+            new_name = str((letter, int(t)))
+
+        userVar.setName(new_name)
         userCPT.add(userVar)
         mapping[userVar.name()] = v.name()
 
@@ -286,11 +296,11 @@ def getPosterior(bn, evs, target):
     ------
         the matplotlib graph
     """
-        # we want to transform for target (str, int) to (strint)
-    raw_target = target[0] + "#" + str(target[1])
+    # we want to transform for target (str, int) to (strint)
+    raw_target = target[0] + bn.separator + str(target[1])
     raw_evs = {}
     for k, v in evs.items():
-        raw_evs[k[0] + "#" + str(k[1])] = v
+        raw_evs[k[0] + bn.separator + str(k[1])] = v
 
     return gnb.getPosterior(bn, evs=raw_evs, target=raw_target)
 
@@ -306,7 +316,7 @@ def plotFollow(lovars, kTBN, T, evs):
   # variables input as atemporal so no need to change
   raw_evs = {}
   for key, value in evs.items():
-    raw_evs[key[0] +"#"+ str(key[1])] = value
+    raw_evs[key[0] + kTBN.separator + str(key[1])] = value
 
   plotFollowUnrolled(lovars, unrollKTBN(kTBN, T), T, raw_evs)
 
@@ -332,7 +342,7 @@ def plotFollowUnrolled(lovars, dbn, T, evs, vars_title=None):
     for i in range(v0.domainSize()):
       serie = []
       for t in range(T):
-        serie.append(ie.posterior(dbn.idFromName(var + "#" + str(t)))[i])
+        serie.append(ie.posterior(dbn.idFromName(var + dbn.separator + str(t)))[i])
       lpots.append(serie)
 
     _, ax = plt.subplots()

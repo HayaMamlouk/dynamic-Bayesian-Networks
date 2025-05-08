@@ -13,11 +13,12 @@ class dCommon:
     A common class for Dynamic Bayesian Networks (DBNs) and Dynamic Tensors.
     """
 
-    def __init__(self, separator="#"):
+    def __init__(self, separator="#", name_display_mode="compact"):
         """
         Initializes the dCommon object.
         """
         self.separator = separator
+        self.name_display_mode = name_display_mode  # "compact" : a,1 (default), "reverse" : 1,a , or "classic" : ('a', 1)
 
     def _userToCodeName(self, name, time_slice):
         r"""
@@ -146,6 +147,14 @@ class dCommon:
         name = self._userToCodeName(n, t)
         return self.kTBN.idFromName(name)
     
+    def set_name_display_mode(self, mode):
+        """
+        Changes the variable name display mode for CPT display representations. 
+        """
+        if mode not in ["compact", "reverse", "classic"]:
+            raise ValueError("Invalid mode. Choose from 'compact', 'reverse', or 'classic'.")
+        self.name_display_mode = mode
+    
 
 class DynamicBayesNet(dCommon):
     """
@@ -154,14 +163,14 @@ class DynamicBayesNet(dCommon):
     a temporal dimension, allowing the modeling of time-evolving systems.
     """
 
-    def __init__(self, k, separator="#"):
+    def __init__(self, k, separator="#", name_display_mode="compact"):
         """
         Initializes the kTBN object.
         """
         self.kTBN = gum.BayesNet()  # The underlying Bayesian Network (pyAgrum.BayesNet)
         self.variables = set()       # List of variables in the kTBN (atemporal)
         self.k = k                # Time horizon (number of time slices)
-        super().__init__(separator)
+        super().__init__(separator, name_display_mode)  # Initialize the common class
     
     def add(self, v):
         r"""
@@ -323,7 +332,7 @@ class DynamicBayesNet(dCommon):
         """
         name, ts = var
         raw_potential = self.kTBN.cpt(self._userToCodeName(name, ts))
-        return dTensor(raw_potential, self.separator)
+        return dTensor(raw_potential, self.separator, self.name_display_mode)
     
     def generateCPTs(self) :
         r"""
@@ -339,7 +348,7 @@ class dTensor(dCommon):
     
     Inherits from dCommon to directly access name conversion functions.
     """
-    def __init__(self, potential, separator="#"):
+    def __init__(self, potential, separator="#", name_display_mode="compact"):
         """
         Parameters
         ----------
@@ -347,9 +356,11 @@ class dTensor(dCommon):
             The underlying potential (CPT) from pyAgrum.
         separator : str, optional
             The separator used for variable names, by default "#".
+        name_display_mode : str, optional
+            The mode for displaying variable names for CPTs, by default "compact".
         """
-        super().__init__(separator)
-        self._potential = potential
+        super().__init__(separator, name_display_mode)
+        self._potential = potential  
 
     def __getitem__(self, key):
         """
@@ -416,16 +427,18 @@ class dTensor(dCommon):
             # Create a new variable with a user-friendly name and put it into the new CPT
             userVar = v.clone()
             letter, t = v.name().split(self.separator)
-            userVar.setName(t + "," + letter)
 
+            if self.name_display_mode == "compact":
+                new_name = f"{letter},{t}"
+            elif self.name_display_mode == "reverse":
+                new_name = f"{t},{letter}"
+            elif self.name_display_mode == "classic":
+                new_name = str((letter, int(t)))
+
+            userVar.setName(new_name)
             userCPT.add(userVar)
             mapping[userVar.name()] = v.name()
 
         # bn.cpt(new_head).fillWith(bn.cpt(prev_head), mapping)
         userCPT.fillWith(cpt, mapping)
         return userCPT.__str__()
-
-
-
-
-    
