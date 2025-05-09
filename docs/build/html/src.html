@@ -1,0 +1,449 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src package &mdash; Dynamic Bayesian Network 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="src" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Dynamic Bayesian Network
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">src package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.DynamicBayesNet">src.DynamicBayesNet module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.DynamicBayesNet.DynamicBayesNet"><code class="docutils literal notranslate"><span class="pre">DynamicBayesNet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.DynamicBayesNet.dCommon"><code class="docutils literal notranslate"><span class="pre">dCommon</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.DynamicBayesNet.dTensor"><code class="docutils literal notranslate"><span class="pre">dTensor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.notebook">src.notebook module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.notebook.getPosterior"><code class="docutils literal notranslate"><span class="pre">getPosterior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.notebook.plotFollow"><code class="docutils literal notranslate"><span class="pre">plotFollow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.notebook.plotFollowUnrolled"><code class="docutils literal notranslate"><span class="pre">plotFollowUnrolled()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.notebook.showCPT"><code class="docutils literal notranslate"><span class="pre">showCPT()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.notebook.showKTBN"><code class="docutils literal notranslate"><span class="pre">showKTBN()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.notebook.showUnrolled"><code class="docutils literal notranslate"><span class="pre">showUnrolled()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.notebook.unrollKTBN"><code class="docutils literal notranslate"><span class="pre">unrollKTBN()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Dynamic Bayesian Network</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+      <li class="breadcrumb-item active">src package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/src.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="src-package">
+<h1>src package<a class="headerlink" href="#src-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-src.DynamicBayesNet">
+<span id="src-dynamicbayesnet-module"></span><h2>src.DynamicBayesNet module<a class="headerlink" href="#module-src.DynamicBayesNet" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.DynamicBayesNet">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.DynamicBayesNet.</span></span><span class="sig-name descname"><span class="pre">DynamicBayesNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_display_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'compact'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#DynamicBayesNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.DynamicBayesNet" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#src.DynamicBayesNet.dCommon" title="src.DynamicBayesNet.dCommon"><code class="xref py py-class docutils literal notranslate"><span class="pre">dCommon</span></code></a></p>
+<p>A class to represent and manipulate Dynamic Bayesian Networks (kTBNs).
+This class extends the functionality of a standard Bayesian Network by incorporating
+a temporal dimension, allowing the modeling of time-evolving systems.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.DynamicBayesNet.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#DynamicBayesNet.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.DynamicBayesNet.add" title="Link to this definition"></a></dt>
+<dd><p>Adds a variable to the kTBN across all time slices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>(</strong><strong>pyAgrum.Variable</strong><strong>)</strong> (<em>v</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.DynamicBayesNet.addArc">
+<span class="sig-name descname"><span class="pre">addArc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tail</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#DynamicBayesNet.addArc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.DynamicBayesNet.addArc" title="Link to this definition"></a></dt>
+<dd><p>Adds a directed arc between variables v1 and v2 across time slices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>tuple</strong><strong>)</strong> (<em>head</em>)</p></li>
+<li><p><strong>(</strong><strong>tuple</strong><strong>)</strong> – <ul>
+<li><p>n is the variable name (string).</p></li>
+<li><p>t is the time slice (int).</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.DynamicBayesNet.addFast">
+<span class="sig-name descname"><span class="pre">addFast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_description</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#DynamicBayesNet.addFast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.DynamicBayesNet.addFast" title="Link to this definition"></a></dt>
+<dd><p>Adds a variable to the kTBN across all time slices. This method uses fast syntax to add a variable in the dbn.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>str</strong><strong>)</strong> (<em>var_description</em>)</p></li>
+<li><p><strong>(</strong><strong>int</strong><strong>)</strong> (<em>domaine</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.DynamicBayesNet.arcs">
+<span class="sig-name descname"><span class="pre">arcs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#DynamicBayesNet.arcs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.DynamicBayesNet.arcs" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The list of arcs in the IBayesNet</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.DynamicBayesNet.cpt">
+<span class="sig-name descname"><span class="pre">cpt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#DynamicBayesNet.cpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.DynamicBayesNet.cpt" title="Link to this definition"></a></dt>
+<dd><p>Returns the Conditional Probability Table (CPT) of a variable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>(</strong><strong>tuple</strong><strong>)</strong> (<em>var</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>pyAgrum.Potential</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The CPT of the variable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.DynamicBayesNet.erase">
+<span class="sig-name descname"><span class="pre">erase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#DynamicBayesNet.erase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.DynamicBayesNet.erase" title="Link to this definition"></a></dt>
+<dd><p>Deletes a variable and its associated arcs from all time slices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>(</strong><strong>String</strong><strong>)</strong> (<em>var</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.DynamicBayesNet.eraseArc">
+<span class="sig-name descname"><span class="pre">eraseArc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tail</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#DynamicBayesNet.eraseArc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.DynamicBayesNet.eraseArc" title="Link to this definition"></a></dt>
+<dd><p>Removes an arc in the BN, and update head’s CTP.</p>
+<p>If (tail, head) doesn’t exist, the nothing happens.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arc</strong> (<em>pyAgrum.Arc when calling eraseArc</em><em>(</em><em>arc</em><em>)</em>) – The arc to be removed.</p></li>
+<li><p><strong>head</strong> (<em>Union</em><em>[</em><em>int</em><em>,</em><em>str</em><em>]</em>) – a variable’s id (int) or name for the head when calling eraseArc(head,tail)</p></li>
+<li><p><strong>tail</strong> (<em>Union</em><em>[</em><em>int</em><em>,</em><em>str</em><em>]</em>) – a variable’s id (int) or name for the tail when calling eraseArc(head,tail)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.DynamicBayesNet.generateCPTs">
+<span class="sig-name descname"><span class="pre">generateCPTs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#DynamicBayesNet.generateCPTs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.DynamicBayesNet.generateCPTs" title="Link to this definition"></a></dt>
+<dd><p>Randomly generates CPTs for a given structure.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.dCommon">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.DynamicBayesNet.</span></span><span class="sig-name descname"><span class="pre">dCommon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_display_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'compact'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#dCommon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.dCommon" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A common class for Dynamic Bayesian Networks (DBNs) and Dynamic Tensors.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.dCommon.idFromName">
+<span class="sig-name descname"><span class="pre">idFromName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#dCommon.idFromName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.dCommon.idFromName" title="Link to this definition"></a></dt>
+<dd><p>Returns a variable’s id given its name in the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>tuple</em>) – The variable’s name from which the id is returned.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>A convenient shortcut for <cite>g.variableFromName(name)</cite> is <cite>g[name]</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The variable’s node id.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pyAgrum.NotFound</strong> – If name does not match a variable in the graph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.dCommon.nameFromId">
+<span class="sig-name descname"><span class="pre">nameFromId</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#dCommon.nameFromId"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.dCommon.nameFromId" title="Link to this definition"></a></dt>
+<dd><p>Returns the name of a variable given its id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>int</em>) – The id of the variable.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The name of the variable.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.dCommon.set_name_display_mode">
+<span class="sig-name descname"><span class="pre">set_name_display_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#dCommon.set_name_display_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.dCommon.set_name_display_mode" title="Link to this definition"></a></dt>
+<dd><p>Changes the variable name display mode for CPT display representations.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.dTensor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.DynamicBayesNet.</span></span><span class="sig-name descname"><span class="pre">dTensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">potential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_display_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'compact'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#dTensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.dTensor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#src.DynamicBayesNet.dCommon" title="src.DynamicBayesNet.dCommon"><code class="xref py py-class docutils literal notranslate"><span class="pre">dCommon</span></code></a></p>
+<p>A wrapper for a pyAgrum.Potential object that exposes a user-friendly
+interface using tuple-based variable identifiers (e.g., (‘A’, 1))
+instead of the internal string format (e.g., ‘A#1’).</p>
+<p>Inherits from dCommon to directly access name conversion functions.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.DynamicBayesNet.dTensor.fillWith">
+<span class="sig-name descname"><span class="pre">fillWith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/DynamicBayesNet.html#dTensor.fillWith"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.DynamicBayesNet.dTensor.fillWith" title="Link to this definition"></a></dt>
+<dd><p>Fills the potential with a constant or with a list of values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em><em>, </em><em>float</em><em>, or </em><em>list</em>) – <ul class="simple">
+<li><p>If a constant, fills the entire potential with that constant.</p></li>
+<li><p>If a list, it is assumed to be a flattened version of the potential.
+The length of the list must match the number of cells in the potential.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-src.notebook">
+<span id="src-notebook-module"></span><h2>src.notebook module<a class="headerlink" href="#module-src.notebook" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.notebook.getPosterior">
+<span class="sig-prename descclassname"><span class="pre">src.notebook.</span></span><span class="sig-name descname"><span class="pre">getPosterior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/notebook.html#getPosterior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.notebook.getPosterior" title="Link to this definition"></a></dt>
+<dd><p>Computes and visualizes the posterior distribution of a target variable
+in an unrolled dynamic Bayesian network, given evidence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bn</strong> (<em>&quot;pyAgrum.BayesNet&quot;</em>) – the BayesNet</p></li>
+<li><p><strong>evs</strong> (<em>Dict</em><em>[</em><em>(</em><em>str</em><em>, </em><em>int</em><em>)</em><em>:int</em><em>|</em><em>str</em><em>|</em><em>List</em><em>[</em><em>float</em><em>]</em><em>]</em>) – map of evidence</p></li>
+<li><p><strong>target</strong> (<em>(</em><em>str</em><em>, </em><em>int</em><em>) </em><em>user friendly format</em>) – name of target variable</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>the matplotlib graph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.notebook.plotFollow">
+<span class="sig-prename descclassname"><span class="pre">src.notebook.</span></span><span class="sig-name descname"><span class="pre">plotFollow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lovars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kTBN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/notebook.html#plotFollow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.notebook.plotFollow" title="Link to this definition"></a></dt>
+<dd><p>Plots modifications of variables in a kTBN knowing the size of the time window (T) and the evidence on the sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lovars</strong> (<em>list</em><em> of </em><em>variables to follow</em>)</p></li>
+<li><p><strong>twoTdbn</strong> (<em>the kTBN</em>)</p></li>
+<li><p><strong>T</strong> (<em>the time range</em>)</p></li>
+<li><p><strong>evs</strong> (<em>observations</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.notebook.plotFollowUnrolled">
+<span class="sig-prename descclassname"><span class="pre">src.notebook.</span></span><span class="sig-name descname"><span class="pre">plotFollowUnrolled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lovars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dbn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vars_title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/notebook.html#plotFollowUnrolled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.notebook.plotFollowUnrolled" title="Link to this definition"></a></dt>
+<dd><p>Plot the dynamic evolution of a list of variables with a dBN.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lovars</strong> (<em>list</em><em> of </em><em>variables to follow</em>)</p></li>
+<li><p><strong>dbn</strong> (<em>the unrolled dbn</em>)</p></li>
+<li><p><strong>T</strong> (<em>the time range</em>)</p></li>
+<li><p><strong>evs</strong> (<em>observations</em>)</p></li>
+<li><p><strong>vars_title</strong> (<em>string for default</em><em> or </em><em>a dictionary with the variable name as key and the respective title as value.</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.notebook.showCPT">
+<span class="sig-prename descclassname"><span class="pre">src.notebook.</span></span><span class="sig-name descname"><span class="pre">showCPT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/notebook.html#showCPT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.notebook.showCPT" title="Link to this definition"></a></dt>
+<dd><p>Display the conditional probability table (CPT) of a variable in a dynamic Bayesian network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dbn</strong> (<em>pyAgrum.DynamicBayesNet</em>) – The dynamic Bayesian network containing the variable.</p></li>
+<li><p><strong>var</strong> (<em>str</em>) – The name of the variable whose CPT to display.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.notebook.showKTBN">
+<span class="sig-prename descclassname"><span class="pre">src.notebook.</span></span><span class="sig-name descname"><span class="pre">showKTBN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/notebook.html#showKTBN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.notebook.showKTBN" title="Link to this definition"></a></dt>
+<dd><p>Display a dynamic Bayesian network using the custom DOT graph format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dbn</strong> (<em>pyAgrum.DynamicBayesNet</em>) – The dynamic Bayesian network to display.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.notebook.showUnrolled">
+<span class="sig-prename descclassname"><span class="pre">src.notebook.</span></span><span class="sig-name descname"><span class="pre">showUnrolled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/notebook.html#showUnrolled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.notebook.showUnrolled" title="Link to this definition"></a></dt>
+<dd><p>Try to show correctly an unrolled BN (user friendly)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dbn</strong> (<em>pyAgrum.BayesNet</em>) – an unrolled BN</p></li>
+<li><p><strong>size</strong> (<em>int</em><em> or </em><em>str</em>) – size of the fig</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.notebook.unrollKTBN">
+<span class="sig-prename descclassname"><span class="pre">src.notebook.</span></span><span class="sig-name descname"><span class="pre">unrollKTBN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/notebook.html#unrollKTBN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.notebook.unrollKTBN" title="Link to this definition"></a></dt>
+<dd><p>Unrolls a dynamic Bayesian network (DBN) into a static Bayesian network.
+This version leverages the parent information from the initial (template) network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dbn</strong> (<em>pyAgrum.DynamicBayesNet</em>) – The dynamic Bayesian network to unroll.</p></li>
+<li><p><strong>nbr</strong> (<em>int</em>) – The total number of time slices to unroll.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The unrolled Bayesian network.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyAgrum.BayesNet</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-src">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="src" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Doruk OZGENC - Haya MAMLOUK.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
