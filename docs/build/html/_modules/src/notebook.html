@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.notebook &#8212; Dynamic Bayesian Network 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for src.notebook</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pyAgrum.lib.notebook</span> <span class="kn">import</span> <span class="n">showGraph</span>
+<span class="kn">import</span> <span class="nn">pyAgrum</span> <span class="k">as</span> <span class="nn">gum</span>
+<span class="kn">import</span> <span class="nn">pydot</span> <span class="k">as</span> <span class="nn">dot</span> 
+<span class="kn">from</span> <span class="nn">pyAgrum.lib.dynamicBN</span> <span class="kn">import</span> <span class="n">getTimeSlicesRange</span><span class="p">,</span> <span class="n">noTimeCluster</span><span class="p">,</span> <span class="n">Rectangle</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pyAgrum.lib.notebook</span> <span class="k">as</span> <span class="nn">gnb</span> 
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">pyAgrum.lib.proba_histogram</span> <span class="k">as</span> <span class="nn">ph</span>
+
+<span class="n">_myTitleHisto_separator</span> <span class="o">=</span> <span class="s2">&quot;#&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_kTBNToDot</span><span class="p">(</span><span class="n">dbn</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Try to correctly represent dBN and kTBN in dot format.</span>
+<span class="sd">    </span>
+<span class="sd">    This version uses a composite node ID (letter + time slice) so that invisible</span>
+<span class="sd">    edges can order nodes correctly, but displays only the letter.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dbn: pyAgrum.BayesNet</span>
+<span class="sd">      a 2TBN or an unrolled BN with a kTBN attribute.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">timeslices</span> <span class="o">=</span> <span class="n">getTimeSlicesRange</span><span class="p">(</span><span class="n">dbn</span><span class="o">.</span><span class="n">kTBN</span><span class="p">)</span>
+    <span class="n">kts</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">timeslices</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">noTimeCluster</span> 
+                   <span class="k">else</span> <span class="mf">1e8</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;t&#39;</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    
+    <span class="n">g</span> <span class="o">=</span> <span class="n">dot</span><span class="o">.</span><span class="n">Dot</span><span class="p">(</span><span class="n">graph_type</span><span class="o">=</span><span class="s1">&#39;digraph&#39;</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">set_rankdir</span><span class="p">(</span><span class="s2">&quot;LR&quot;</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">set_splines</span><span class="p">(</span><span class="s2">&quot;ortho&quot;</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">set_node_defaults</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;#000000&quot;</span><span class="p">,</span> <span class="n">fillcolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;filled&quot;</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">noTimeCluster</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">dot</span><span class="o">.</span><span class="n">Cluster</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Time slice </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">bgcolor</span><span class="o">=</span><span class="s2">&quot;#DDDDDD&quot;</span><span class="p">,</span> <span class="n">rankdir</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">add_subgraph</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">g</span>  
+        
+        <span class="c1"># Add nodes for this time slice.</span>
+        <span class="c1"># Here, each node is given a composite id: letter + time slice.</span>
+        <span class="c1"># However, the displayed label is only the letter.</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">timeslices</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
+            <span class="c1"># n is the variable name (assumed to be of the form &quot;letter_time&quot;)</span>
+            <span class="c1"># _codeToUserName returns a tuple (letter, time) – we take the letter.</span>
+            <span class="n">letter</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dbn</span><span class="o">.</span><span class="n">_codeToUserName</span><span class="p">(</span><span class="n">n</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">composite_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">letter</span><span class="si">}{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># e.g., &quot;A0&quot; if letter is &quot;A&quot; and k is &quot;0&quot;</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">dot</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="n">composite_id</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">letter</span><span class="p">))</span>
+    
+    <span class="n">g</span><span class="o">.</span><span class="n">set_edge_defaults</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="s2">&quot;False&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">tail</span><span class="p">,</span> <span class="n">head</span> <span class="ow">in</span> <span class="n">dbn</span><span class="o">.</span><span class="n">kTBN</span><span class="o">.</span><span class="n">arcs</span><span class="p">():</span>
+        <span class="c1"># Retrieve the full variable name from the kTBN, then split into (letter, time)</span>
+        <span class="n">tail_tuple</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">_codeToUserName</span><span class="p">(</span><span class="n">dbn</span><span class="o">.</span><span class="n">kTBN</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">tail</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">())</span>
+        <span class="n">head_tuple</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">_codeToUserName</span><span class="p">(</span><span class="n">dbn</span><span class="o">.</span><span class="n">kTBN</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">())</span>
+        <span class="n">tail_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tail_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}{</span><span class="n">tail_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">head_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}{</span><span class="n">head_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">dot</span><span class="o">.</span><span class="n">Edge</span><span class="p">(</span><span class="n">tail_id</span><span class="p">,</span> <span class="n">head_id</span><span class="p">))</span>
+    
+    <span class="n">g</span><span class="o">.</span><span class="n">set_edge_defaults</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&quot;invis&quot;</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">timeslices</span><span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">]:</span>
+        <span class="c1"># x[0] is the variable name; extract its letter.</span>
+        <span class="n">letter</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dbn</span><span class="o">.</span><span class="n">_codeToUserName</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">prec</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">noTimeCluster</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">prec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">dot</span><span class="o">.</span><span class="n">Edge</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">letter</span><span class="si">}{</span><span class="n">prec</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">letter</span><span class="si">}{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+            <span class="n">prec</span> <span class="o">=</span> <span class="n">k</span>
+    
+    <span class="k">return</span> <span class="n">g</span>
+
+<div class="viewcode-block" id="showKTBN">
+<a class="viewcode-back" href="../../src.html#src.notebook.showKTBN">[docs]</a>
+<span class="k">def</span> <span class="nf">showKTBN</span><span class="p">(</span><span class="n">dbn</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Display a dynamic Bayesian network using the custom DOT graph format.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dbn : pyAgrum.DynamicBayesNet</span>
+<span class="sd">        The dynamic Bayesian network to display.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">showGraph</span><span class="p">(</span><span class="n">_kTBNToDot</span><span class="p">(</span><span class="n">dbn</span><span class="p">))</span></div>
+
+
+<span class="k">def</span> <span class="nf">_TimeSlicesToDot</span><span class="p">(</span><span class="n">bn</span><span class="p">):</span>
+<span class="w">  </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Try to correctly represent BN in dot format (user friendly)</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+<span class="sd">  dbn: pyAgrum.BayesNet</span>
+<span class="sd">        an unrolled BN</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">separator</span> <span class="o">=</span> <span class="n">bn</span><span class="o">.</span><span class="n">separator</span>
+  <span class="n">timeslices</span> <span class="o">=</span> <span class="n">getTimeSlicesRange</span><span class="p">(</span><span class="n">bn</span><span class="p">)</span>
+  <span class="n">kts</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">timeslices</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">noTimeCluster</span> <span class="k">else</span> <span class="mf">1e8</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;t&#39;</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+  <span class="c1"># dynamic member makes pylink unhappy</span>
+  <span class="c1"># pylint: disable=no-member</span>
+  <span class="n">g</span> <span class="o">=</span> <span class="n">dot</span><span class="o">.</span><span class="n">Dot</span><span class="p">(</span><span class="n">graph_type</span><span class="o">=</span><span class="s1">&#39;digraph&#39;</span><span class="p">)</span>
+  <span class="n">g</span><span class="o">.</span><span class="n">set_rankdir</span><span class="p">(</span><span class="s2">&quot;LR&quot;</span><span class="p">)</span>
+  <span class="n">g</span><span class="o">.</span><span class="n">set_splines</span><span class="p">(</span><span class="s2">&quot;ortho&quot;</span><span class="p">)</span>
+  <span class="n">g</span><span class="o">.</span><span class="n">set_node_defaults</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;#000000&quot;</span><span class="p">,</span> <span class="n">fillcolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;filled&quot;</span><span class="p">)</span>
+
+  <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kts</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">noTimeCluster</span><span class="p">:</span>
+      <span class="n">cluster</span> <span class="o">=</span> <span class="n">dot</span><span class="o">.</span><span class="n">Cluster</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Time slice </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">bgcolor</span><span class="o">=</span><span class="s2">&quot;#DDDDDD&quot;</span><span class="p">,</span> <span class="n">rankdir</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)</span>
+      <span class="n">g</span><span class="o">.</span><span class="n">add_subgraph</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">cluster</span> <span class="o">=</span> <span class="n">g</span>  <span class="c1"># small trick to add in graph variable in no timeslice</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">timeslices</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
+      <span class="n">letter</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span>
+      <span class="n">composite_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">letter</span><span class="si">}{</span><span class="n">t</span><span class="si">}</span><span class="s2">&quot;</span> 
+      <span class="n">cluster</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">dot</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="n">composite_id</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">letter</span><span class="p">))</span>
+
+  <span class="n">g</span><span class="o">.</span><span class="n">set_edge_defaults</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="s2">&quot;False&quot;</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">tail</span><span class="p">,</span> <span class="n">head</span> <span class="ow">in</span> <span class="n">bn</span><span class="o">.</span><span class="n">arcs</span><span class="p">():</span>
+    <span class="n">tail_tuple</span> <span class="o">=</span> <span class="n">bn</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">tail</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span>
+    <span class="n">head_tuple</span> <span class="o">=</span> <span class="n">bn</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span>
+    <span class="n">tail_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tail_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}{</span><span class="n">tail_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">head_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}{</span><span class="n">head_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">dot</span><span class="o">.</span><span class="n">Edge</span><span class="p">(</span><span class="n">tail_id</span><span class="p">,</span> <span class="n">head_id</span><span class="p">))</span>
+
+  <span class="n">g</span><span class="o">.</span><span class="n">set_edge_defaults</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&quot;invis&quot;</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">timeslices</span><span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">]:</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">prec</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kts</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">noTimeCluster</span><span class="p">:</span>
+        <span class="k">continue</span>
+      <span class="k">if</span> <span class="n">prec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">dot</span><span class="o">.</span><span class="n">Edge</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}{</span><span class="n">prec</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}{</span><span class="n">k</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">))</span>
+      <span class="n">prec</span> <span class="o">=</span> <span class="n">k</span>
+
+  <span class="k">return</span> <span class="n">g</span>
+
+<div class="viewcode-block" id="showUnrolled">
+<a class="viewcode-back" href="../../src.html#src.notebook.showUnrolled">[docs]</a>
+<span class="k">def</span> <span class="nf">showUnrolled</span><span class="p">(</span><span class="n">dbn</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">  </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Try to show correctly an unrolled BN (user friendly)</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+<span class="sd">  dbn: pyAgrum.BayesNet</span>
+<span class="sd">        an unrolled BN</span>
+<span class="sd">  size: int or str</span>
+<span class="sd">    size of the fig</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+
+  <span class="c1"># jupyter notebooks is optional</span>
+  <span class="c1"># pylint: disable=import-outside-toplevel</span>
+  <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">gum</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;dynamicBN&quot;</span><span class="p">,</span> <span class="s2">&quot;default_graph_size&quot;</span><span class="p">]</span>
+
+  <span class="n">showGraph</span><span class="p">(</span><span class="n">_TimeSlicesToDot</span><span class="p">(</span><span class="n">dbn</span><span class="p">),</span> <span class="n">size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="unrollKTBN">
+<a class="viewcode-back" href="../../src.html#src.notebook.unrollKTBN">[docs]</a>
+<span class="k">def</span> <span class="nf">unrollKTBN</span><span class="p">(</span><span class="n">dbn</span><span class="p">,</span> <span class="n">nbr</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unrolls a dynamic Bayesian network (DBN) into a static Bayesian network.</span>
+<span class="sd">    This version leverages the parent information from the initial (template) network.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dbn : pyAgrum.DynamicBayesNet</span>
+<span class="sd">        The dynamic Bayesian network to unroll.</span>
+<span class="sd">    nbr : int</span>
+<span class="sd">        The total number of time slices to unroll.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pyAgrum.BayesNet</span>
+<span class="sd">        The unrolled Bayesian network.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># The original number of time slices in the template</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">k</span>
+    <span class="k">if</span> <span class="n">nbr</span> <span class="o">&lt;</span> <span class="n">k</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The number of time slices to unroll must be greater than or equal to the current number of time slices.&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Start by copying the initial (template) network.</span>
+    <span class="n">bn</span> <span class="o">=</span> <span class="n">gum</span><span class="o">.</span><span class="n">BayesNet</span><span class="p">(</span><span class="n">dbn</span><span class="o">.</span><span class="n">kTBN</span><span class="p">)</span>
+    
+    <span class="c1"># For each new time slice beyond the template.</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nbr</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">dbn</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="c1"># Create the new instance for this variable.</span>
+            <span class="n">new_var</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">_userToCodeName</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+            <span class="c1"># Retrieve a template instance to copy its domain.</span>
+            <span class="n">template_var</span> <span class="o">=</span> <span class="n">bn</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">dbn</span><span class="o">.</span><span class="n">_userToCodeName</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">new_label_var</span> <span class="o">=</span> <span class="n">template_var</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="n">new_label_var</span><span class="o">.</span><span class="n">setName</span><span class="p">(</span><span class="n">new_var</span><span class="p">)</span>
+            <span class="n">new_label_var</span><span class="o">.</span><span class="n">setDescription</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">template_var</span><span class="o">.</span><span class="n">description</span><span class="p">()</span><span class="si">}</span><span class="s2"> (t=</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">bn</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_label_var</span><span class="p">)</span> 
+
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">dbn</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="n">new_var</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">_userToCodeName</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+            <span class="c1"># Use the template instance (in the last time slice of the template) to retrieve parent info.</span>
+            <span class="n">template_node</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">_userToCodeName</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>         <span class="c1"># Template node</span>
+            <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span> <span class="n">new_var</span><span class="p">:</span> <span class="n">dbn</span><span class="o">.</span><span class="n">_userToCodeName</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">}</span>  <span class="c1"># Mapping for CPT update</span>
+            <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">bn</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">template_node</span><span class="p">):</span>
+                <span class="c1"># Decode the parent&#39;s base name and its time slice from the template.</span>
+                <span class="n">parent_user</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">_codeToUserName</span><span class="p">(</span><span class="n">bn</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">())</span>
+                <span class="n">parent_base</span><span class="p">,</span> <span class="n">parent_ts</span> <span class="o">=</span> <span class="n">parent_user</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">parent_user</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                
+                <span class="c1"># Calculate the time distance between the template node and its parent.</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">parent_ts</span>
+                <span class="c1"># The corresponding parent for the new time slice is at time: t - d.</span>
+                <span class="n">parent_new</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">_userToCodeName</span><span class="p">(</span><span class="n">parent_base</span><span class="p">,</span> <span class="n">t</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span>
+                <span class="c1"># print(f&quot;Adding arc from {parent_new} to {new_var}&quot;)</span>
+                <span class="n">bn</span><span class="o">.</span><span class="n">addArc</span><span class="p">(</span><span class="n">parent_new</span><span class="p">,</span> <span class="n">new_var</span><span class="p">)</span>
+
+                <span class="c1"># Build the mapping for the CPT update:</span>
+                <span class="c1"># - Map the new variable to its previous instance.</span>
+                <span class="n">prev_parent</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">_userToCodeName</span><span class="p">(</span><span class="n">parent_base</span><span class="p">,</span> <span class="n">t</span> <span class="o">-</span> <span class="n">d</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">mapping</span><span class="p">[</span><span class="n">parent_new</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_parent</span>
+            
+            <span class="c1"># Copy the CPT from the previous time slice using the mapping.</span>
+            <span class="n">bn</span><span class="o">.</span><span class="n">cpt</span><span class="p">(</span><span class="n">new_var</span><span class="p">)</span><span class="o">.</span><span class="n">fillWith</span><span class="p">(</span><span class="n">bn</span><span class="o">.</span><span class="n">cpt</span><span class="p">(</span><span class="n">dbn</span><span class="o">.</span><span class="n">_userToCodeName</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">mapping</span><span class="p">)</span>
+
+    <span class="n">bn</span><span class="o">.</span><span class="n">separator</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">separator</span>
+    <span class="k">return</span> <span class="n">bn</span></div>
+
+
+<div class="viewcode-block" id="showCPT">
+<a class="viewcode-back" href="../../src.html#src.notebook.showCPT">[docs]</a>
+<span class="k">def</span> <span class="nf">showCPT</span><span class="p">(</span><span class="n">dbn</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Display the conditional probability table (CPT) of a variable in a dynamic Bayesian network.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dbn : pyAgrum.DynamicBayesNet</span>
+<span class="sd">        The dynamic Bayesian network containing the variable.</span>
+
+<span class="sd">    var : str</span>
+<span class="sd">        The name of the variable whose CPT to display.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get pyAgrum.Potential CPT table of the variable</span>
+    <span class="n">cpt</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">cpt</span><span class="p">(</span><span class="n">var</span><span class="p">)</span><span class="o">.</span><span class="n">_potential</span>
+    
+    <span class="c1"># Create a new Potential with user-friendly variable names</span>
+    <span class="n">userCPT</span> <span class="o">=</span> <span class="n">gum</span><span class="o">.</span><span class="n">Potential</span><span class="p">()</span>
+    
+    <span class="c1"># Get the list of variables in the CPT</span>
+    <span class="n">internalVariables</span> <span class="o">=</span> <span class="n">cpt</span><span class="o">.</span><span class="n">variablesSequence</span><span class="p">()</span>
+
+    <span class="c1"># Create a mapping from user-friendly variable names to internal variable names</span>
+    <span class="n">mapping</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">internalVariables</span><span class="p">:</span>
+        <span class="c1"># Create a new variable with a user-friendly name and put it into the new CPT</span>
+        <span class="n">userVar</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="n">letter</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">dbn</span><span class="o">.</span><span class="n">separator</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dbn</span><span class="o">.</span><span class="n">name_display_mode</span> <span class="o">==</span> <span class="s2">&quot;compact&quot;</span><span class="p">:</span>
+            <span class="n">new_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">letter</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="n">dbn</span><span class="o">.</span><span class="n">name_display_mode</span> <span class="o">==</span> <span class="s2">&quot;reverse&quot;</span><span class="p">:</span>
+            <span class="n">new_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">letter</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="n">dbn</span><span class="o">.</span><span class="n">name_display_mode</span> <span class="o">==</span> <span class="s2">&quot;classic&quot;</span><span class="p">:</span>
+            <span class="n">new_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">((</span><span class="n">letter</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">)))</span>
+
+        <span class="n">userVar</span><span class="o">.</span><span class="n">setName</span><span class="p">(</span><span class="n">new_name</span><span class="p">)</span>
+        <span class="n">userCPT</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">userVar</span><span class="p">)</span>
+        <span class="n">mapping</span><span class="p">[</span><span class="n">userVar</span><span class="o">.</span><span class="n">name</span><span class="p">()]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
+
+    <span class="c1"># bn.cpt(new_head).fillWith(bn.cpt(prev_head), mapping)</span>
+    <span class="n">userCPT</span><span class="o">.</span><span class="n">fillWith</span><span class="p">(</span><span class="n">cpt</span><span class="p">,</span> <span class="n">mapping</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">userCPT</span></div>
+
+
+<span class="n">flow</span> <span class="o">=</span> <span class="n">gnb</span><span class="o">.</span><span class="n">FlowLayout</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">_myTitleHisto</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">show_mu_sigma</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+  <span class="n">var</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+  <span class="n">name</span><span class="p">,</span> <span class="n">time_slice</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">_myTitleHisto_separator</span><span class="p">)</span>
+  <span class="n">var_name</span> <span class="o">=</span> <span class="n">name</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">time_slice</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">varType</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">show_mu_sigma</span><span class="p">:</span>  <span class="c1"># type=1 is for gum.LabelizedVariable</span>
+    <span class="k">return</span> <span class="n">var_name</span>
+
+  <span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">std</span><span class="p">)</span> <span class="o">=</span> <span class="n">ph</span><span class="o">.</span><span class="n">_stats</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">std</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">var_name</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var_name</span><span class="si">}</span><span class="se">\n</span><span class="s2">$</span><span class="se">\\</span><span class="s2">mu=</span><span class="si">{</span><span class="n">mu</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">$; $</span><span class="se">\\</span><span class="s2">sigma=</span><span class="si">{</span><span class="n">std</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">$&quot;</span>
+  
+<span class="n">ph</span><span class="o">.</span><span class="n">_getTitleHisto</span> <span class="o">=</span> <span class="n">_myTitleHisto</span>
+
+<div class="viewcode-block" id="getPosterior">
+<a class="viewcode-back" href="../../src.html#src.notebook.getPosterior">[docs]</a>
+<span class="k">def</span> <span class="nf">getPosterior</span><span class="p">(</span><span class="n">bn</span><span class="p">,</span> <span class="n">evs</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes and visualizes the posterior distribution of a target variable</span>
+<span class="sd">    in an unrolled dynamic Bayesian network, given evidence.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bn: &quot;pyAgrum.BayesNet&quot;</span>
+<span class="sd">        the BayesNet</span>
+<span class="sd">    evs: Dict[(str, int):int|str|List[float]]</span>
+<span class="sd">        map of evidence</span>
+<span class="sd">    target: (str, int) user friendly format</span>
+<span class="sd">        name of target variable</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ------</span>
+<span class="sd">        the matplotlib graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_myTitleHisto_separator</span>
+    <span class="n">_myTitleHisto_separator</span> <span class="o">=</span> <span class="n">bn</span><span class="o">.</span><span class="n">separator</span>
+    <span class="c1"># we want to transform for target (str, int) to (strint)</span>
+    <span class="n">raw_target</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">bn</span><span class="o">.</span><span class="n">separator</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">target</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">raw_evs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">evs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">raw_evs</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">bn</span><span class="o">.</span><span class="n">separator</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">return</span> <span class="n">gnb</span><span class="o">.</span><span class="n">getPosterior</span><span class="p">(</span><span class="n">bn</span><span class="p">,</span> <span class="n">evs</span><span class="o">=</span><span class="n">raw_evs</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">raw_target</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="plotFollow">
+<a class="viewcode-back" href="../../src.html#src.notebook.plotFollow">[docs]</a>
+<span class="k">def</span> <span class="nf">plotFollow</span><span class="p">(</span><span class="n">lovars</span><span class="p">,</span> <span class="n">kTBN</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">evs</span><span class="p">):</span>
+<span class="w">  </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Plots modifications of variables in a kTBN knowing the size of the time window (T) and the evidence on the sequence.</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+
+<span class="sd">  lovars: list of variables to follow</span>
+<span class="sd">  twoTdbn: the kTBN</span>
+<span class="sd">  T: the time range</span>
+<span class="sd">  evs: observations</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="c1"># variables input as atemporal so no need to change</span>
+  <span class="n">raw_evs</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">evs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">raw_evs</span><span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">kTBN</span><span class="o">.</span><span class="n">separator</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="o">=</span> <span class="n">value</span>
+
+  <span class="n">plotFollowUnrolled</span><span class="p">(</span><span class="n">lovars</span><span class="p">,</span> <span class="n">unrollKTBN</span><span class="p">(</span><span class="n">kTBN</span><span class="p">,</span> <span class="n">T</span><span class="p">),</span> <span class="n">T</span><span class="p">,</span> <span class="n">raw_evs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="plotFollowUnrolled">
+<a class="viewcode-back" href="../../src.html#src.notebook.plotFollowUnrolled">[docs]</a>
+<span class="k">def</span> <span class="nf">plotFollowUnrolled</span><span class="p">(</span><span class="n">lovars</span><span class="p">,</span> <span class="n">dbn</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">evs</span><span class="p">,</span> <span class="n">vars_title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">  </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Plot the dynamic evolution of a list of variables with a dBN.</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+<span class="sd">  lovars: list of variables to follow</span>
+<span class="sd">  dbn: the unrolled dbn</span>
+<span class="sd">  T: the time range</span>
+<span class="sd">  evs: observations</span>
+<span class="sd">  vars_title: string for default or a dictionary with the variable name as key and the respective title as value.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">ie</span> <span class="o">=</span> <span class="n">gum</span><span class="o">.</span><span class="n">LazyPropagation</span><span class="p">(</span><span class="n">dbn</span><span class="p">)</span>
+  <span class="n">ie</span><span class="o">.</span><span class="n">setEvidence</span><span class="p">(</span><span class="n">evs</span><span class="p">)</span>
+  <span class="n">ie</span><span class="o">.</span><span class="n">makeInference</span><span class="p">()</span>
+
+  <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+
+  <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">lovars</span><span class="p">:</span>
+    <span class="n">v0</span> <span class="o">=</span> <span class="n">dbn</span><span class="o">.</span><span class="n">variableFromName</span><span class="p">(</span><span class="n">var</span> <span class="o">+</span> <span class="n">dbn</span><span class="o">.</span><span class="n">separator</span> <span class="o">+</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span>
+    <span class="n">lpots</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">v0</span><span class="o">.</span><span class="n">domainSize</span><span class="p">()):</span>
+      <span class="n">serie</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="p">):</span>
+        <span class="n">serie</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ie</span><span class="o">.</span><span class="n">posterior</span><span class="p">(</span><span class="n">dbn</span><span class="o">.</span><span class="n">idFromName</span><span class="p">(</span><span class="n">var</span> <span class="o">+</span> <span class="n">dbn</span><span class="o">.</span><span class="n">separator</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">)))[</span><span class="n">i</span><span class="p">])</span>
+      <span class="n">lpots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">serie</span><span class="p">)</span>
+
+    <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">T</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+
+    <span class="c1"># Setting a customized title</span>
+    <span class="k">if</span> <span class="n">vars_title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Following variable </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">vars_title</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">vars_title</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Incorrect format of the plots title dictionary&quot;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+
+    <span class="n">stack</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">stackplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lpots</span><span class="p">)</span>
+
+    <span class="n">proxy_rects</span> <span class="o">=</span> <span class="p">[</span><span class="n">Rectangle</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">pc</span><span class="o">.</span><span class="n">get_facecolor</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+                   <span class="k">for</span> <span class="n">pc</span> <span class="ow">in</span> <span class="n">stack</span><span class="p">]</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">v0</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">v0</span><span class="o">.</span><span class="n">domainSize</span><span class="p">())]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">proxy_rects</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center left&#39;</span><span class="p">,</span>
+               <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fancybox</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">shadow</span><span class="o">=</span><span class="kc">True</span>
+               <span class="p">)</span></div>
+
+
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Dynamic Bayesian Network</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Doruk OZGENC - Haya MAMLOUK.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
