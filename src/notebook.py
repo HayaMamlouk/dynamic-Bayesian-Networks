@@ -7,9 +7,6 @@ import pyAgrum.lib.notebook as gnb
 from matplotlib import pyplot as plt
 import pyAgrum.lib.proba_histogram as ph
 
-_myTitleHisto_separator = "#"
-
-
 def _kTBNToDot(dbn):
     r"""
     Try to correctly represent dBN and kTBN in dot format.
@@ -91,7 +88,7 @@ def _TimeSlicesToDot(bn):
   dbn: pyAgrum.BayesNet
         an unrolled BN
   """
-  separator = bn.separator
+  separator = bn.dynamic_separator
   timeslices = getTimeSlicesRange(bn)
   kts = sorted(timeslices.keys(), key=lambda x: -1 if x == noTimeCluster else 1e8 if x == 't' else int(x))
 
@@ -216,7 +213,7 @@ def unrollKTBN(dbn, nbr):
             # Copy the CPT from the previous time slice using the mapping.
             bn.cpt(new_var).fillWith(bn.cpt(dbn._userToCodeName(var, t - 1)), mapping)
 
-    bn.separator = dbn.separator
+    bn.dynamic_separator = dbn.separator
     return bn
 
 def showCPT(dbn, var):
@@ -267,7 +264,7 @@ flow = gnb.FlowLayout()
 
 def _myTitleHisto(p, show_mu_sigma=True):
   var = p.variable(0)
-  name, time_slice = var.name().split(_myTitleHisto_separator)
+  name, time_slice = var.name().split(ph.dynamic_separator)
   var_name = name, int(time_slice)
 
   if var.varType() == 1 or not show_mu_sigma:  # type=1 is for gum.LabelizedVariable
@@ -279,8 +276,6 @@ def _myTitleHisto(p, show_mu_sigma=True):
   else:
     return f"{var_name}\n$\\mu={mu:.2f}$; $\\sigma={std:.2f}$"
   
-ph._getTitleHisto = _myTitleHisto
-
 def getPosterior(bn, evs, target):
     r"""
     Computes and visualizes the posterior distribution of a target variable
@@ -299,13 +294,14 @@ def getPosterior(bn, evs, target):
     ------
         the matplotlib graph
     """
-    global _myTitleHisto_separator
-    _myTitleHisto_separator = bn.separator
     # we want to transform for target (str, int) to (strint)
-    raw_target = target[0] + bn.separator + str(target[1])
+    raw_target = target[0] + bn.dynamic_separator + str(target[1])
     raw_evs = {}
     for k, v in evs.items():
-        raw_evs[k[0] + bn.separator + str(k[1])] = v
+        raw_evs[k[0] + bn.dynamic_separator + str(k[1])] = v
+
+    ph.dynamic_separator = bn.dynamic_separator
+    ph._getTitleHisto = _myTitleHisto
 
     return gnb.getPosterior(bn, evs=raw_evs, target=raw_target)
 
@@ -347,12 +343,12 @@ def plotFollowUnrolled(lovars, dbn, T, evs, vars_title=None):
   x = np.arange(T)
 
   for var in lovars:
-    v0 = dbn.variableFromName(var + dbn.separator + "0")
+    v0 = dbn.variableFromName(var + dbn.dynamic_separator + "0")
     lpots = []
     for i in range(v0.domainSize()):
       serie = []
       for t in range(T):
-        serie.append(ie.posterior(dbn.idFromName(var + dbn.separator + str(t)))[i])
+        serie.append(ie.posterior(dbn.idFromName(var + dbn.dynamic_separator + str(t)))[i])
       lpots.append(serie)
 
     _, ax = plt.subplots()
