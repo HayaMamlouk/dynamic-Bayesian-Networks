@@ -11,7 +11,7 @@ _myTitleHisto_separator = "#"
 
 
 def _kTBNToDot(dbn):
-    """
+    r"""
     Try to correctly represent dBN and kTBN in dot format.
     
     This version uses a composite node ID (letter + time slice) so that invisible
@@ -72,7 +72,7 @@ def _kTBNToDot(dbn):
     return g
 
 def showKTBN(dbn):
-    """
+    r"""
     Display a dynamic Bayesian network using the custom DOT graph format.
 
     Parameters
@@ -83,7 +83,7 @@ def showKTBN(dbn):
     return showGraph(_kTBNToDot(dbn))
 
 def _TimeSlicesToDot(bn):
-  """
+  r"""
   Try to correctly represent BN in dot format (user friendly)
 
   Parameters
@@ -135,7 +135,7 @@ def _TimeSlicesToDot(bn):
   return g
 
 def showUnrolled(dbn, size=None):
-  """
+  r"""
   Try to show correctly an unrolled BN (user friendly)
 
   Parameters
@@ -311,12 +311,15 @@ def getPosterior(bn, evs, target):
 
 def plotFollow(lovars, kTBN, T, evs):
   r"""
-  plots modifications of variables in a kTBN knowing the size of the time window (T) and the evidence on the sequence.
+  Plots modifications of variables in a kTBN knowing the size of the time window (T) and the evidence on the sequence.
 
-  :param lovars: list of variables to follow
-  :param twoTdbn: the kTBN
-  :param T: the time range
-  :param evs: observations
+  Parameters
+  ----------
+
+  lovars: list of variables to follow
+  twoTdbn: the kTBN
+  T: the time range
+  evs: observations
   """
   # variables input as atemporal so no need to change
   raw_evs = {}
@@ -326,14 +329,16 @@ def plotFollow(lovars, kTBN, T, evs):
   plotFollowUnrolled(lovars, unrollKTBN(kTBN, T), T, raw_evs)
 
 def plotFollowUnrolled(lovars, dbn, T, evs, vars_title=None):
-  """
-  plot the dynamic evolution of a list of vars with a dBN
+  r"""
+  Plot the dynamic evolution of a list of variables with a dBN.
 
-  :param lovars: list of variables to follow
-  :param dbn: the unrolled dbn
-  :param T: the time range
-  :param evs: observations
-  :param vars_title: string for default or a dictionary with the variable name as key and the respective title as value.
+  Parameters
+  ----------
+  lovars: list of variables to follow
+  dbn: the unrolled dbn
+  T: the time range
+  evs: observations
+  vars_title: string for default or a dictionary with the variable name as key and the respective title as value.
   """
   ie = gum.LazyPropagation(dbn)
   ie.setEvidence(evs)

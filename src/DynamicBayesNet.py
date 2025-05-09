@@ -37,7 +37,7 @@ class dCommon:
         return f"{name}{self.separator}{time_slice}"
     
     def _codeToUserName(self, name):
-        """
+        r"""
         Converts a code-friendly variable name to a user-friendly name. The name should be in the format: {string + separator + time_slice}.
 
         Parameters
