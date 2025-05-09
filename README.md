@@ -1,35 +1,40 @@
-# 📊 Multi-Temporal Dynamic Bayesian Networks (kTBN)
+# Multi-Temporal Dynamic Bayesian Networks (kTBN)
 
 This project provides a flexible and modular Python framework for modeling, manipulating, and inferring **Dynamic Bayesian Networks (DBNs)** with a fixed time horizon (`kTBN`). Built on top of [pyAgrum](https://agrum.gitlab.io/), it extends the classic Bayesian Network interface to support temporal reasoning, with a clean and user-friendly API.
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
 ```
-.
+
 ├── src/
-│   ├── DynamicBayesNet.py    # Main logic for building kTBNs
-│   ├── notebook.py           # Display utilities and inference helpers
-    ├── tutorial.ipynb           # Guided notebook to explore features
+│   ├── DynamicBayesNet.py        # Core logic for building kTBNs
+│   ├── notebook.py               # Display utilities and inference helpers
+│   └── tutorial.ipynb            # Interactive notebook for feature exploration
 │
 ├── tests/
-│   ├── TestDynamicBayesNet.py  # Unit tests for core functionality
-    ├── experiments.ipynb        # Real-world use case (weather scenario)
+│   ├── TestDynamicBayesNet.py    # Unit tests for core functionality
+│   └── experiments.ipynb         # Real-world use case (weather scenario)
 │
-└── README.md
+├── docs/                         # Auto-generated documentation via Sphinx             
+│
+├── Rapport_PAND_MAMLOUK_OZGENC/ # Final project report (PDF)
+│
+└── README.md                     # Project overview and installation guide
+
 ```
 
 ---
 
-## ✅ Features
+## Features
 
-* ✅ Simple API to define and link variables across multiple time slices.
-* ✅ Flexible separator system (`#`, `|`, etc.) for variable naming.
-* ✅ Easy unrolling of kTBNs into standard Bayesian Networks for inference.
-* ✅ Custom display modes (`compact`, `reverse`, `classic`) for readable CPTs.
-* ✅ Built-in plotting and posterior visualization (`plotFollow`, `getPosterior`).
-* ✅ Full test suite with edge cases and structure preservation validation.
+* Simple API to define and link variables across multiple time slices.
+* Flexible separator system (`#`, `|`, etc.) for variable naming.
+* Easy unrolling of kTBNs into standard Bayesian Networks for inference.
+* Custom display modes (`compact`, `reverse`, `classic`) for readable CPTs.
+* Built-in plotting and posterior visualization (`plotFollow`, `getPosterior`).
+* Full test suite with edge cases and structure preservation validation.
 
 ---
 
@@ -56,7 +61,7 @@ Open `tutorial.ipynb` to explore all core functionalities in a self-contained an
 
 ---
 
-## 🧪 Testing
+## Testing
 
 All core components are rigorously tested using `unittest`.
 
@@ -77,7 +82,7 @@ Tests cover:
 
 ---
 
-## 🌦 Real-World Example: Weather Forecasting
+## Real-World Example: Weather Forecasting
 
 In `experiments.ipynb`, we designed a realistic weather model with variables like:
 
@@ -95,7 +100,7 @@ This use case allowed us to:
 
 ---
 
-## 🪠 Main Modules
+## Main Modules
 
 ### `DynamicBayesNet.py`
 
@@ -110,16 +115,7 @@ This use case allowed us to:
 
 ---
 
-## 📌 Design Philosophy
-
-* **Modular**: Separated model logic, display tools, and tests.
-* **Intuitive**: Follows pyAgrum’s API where possible, adds temporal extensions naturally.
-* **User-friendly**: Suitable for both experimentation and educational use.
-* **Fully documented**: Function-level docstrings provided throughout.
-
----
-
-## 📄 License
+##  License
 
 MIT License 
 
@@ -128,12 +124,6 @@ MIT License
 ## ✍️ Authors
 
 * Doruk OZGENC & Haya MAMLOUK — Sorbonne University — M1 AI2D
-* Special thanks to Pierre-Henri WUILLEMIN
+* This project was carried out under the supervision of Professor Pierre-Henri WUILLEMIN
 
----
 
-## 📚 Future Additions
-
-* [ ] Jupyter-based documentation
-* [ ] Annexes for full technical specification & user manual
-* [ ] Export to standard Bayesian Network formats (e.g. `.xdsl`, `.bif`)
