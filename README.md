@@ -63,7 +63,7 @@ All core components are rigorously tested using `unittest`.
 To run the test suite:
 
 ```bash
-python -m unittest test/TestDynamicBayesNet.py
+python -m unittest tests/TestDynamicBayesNet.py
 ```
 
 Tests cover:
@@ -71,6 +71,7 @@ Tests cover:
 * Variable creation and deletion
 * Arc management
 * CPT assignment and value retrieval
+* Unrolling 
 * Custom separators
 * Structure preservation through unrolling
 

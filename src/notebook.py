@@ -134,7 +134,6 @@ def _TimeSlicesToDot(bn):
 
   return g
 
-
 def showUnrolled(dbn, size=None):
   """
   Try to show correctly an unrolled BN (user friendly)
@@ -155,7 +154,7 @@ def showUnrolled(dbn, size=None):
   showGraph(_TimeSlicesToDot(dbn), size)
 
 def unrollKTBN(dbn, nbr):
-    """
+    r"""
     Unrolls a dynamic Bayesian network (DBN) into a static Bayesian network.
     This version leverages the parent information from the initial (template) network.
     
@@ -221,7 +220,7 @@ def unrollKTBN(dbn, nbr):
     return bn
 
 def showCPT(dbn, var):
-    """
+    r"""
     Display the conditional probability table (CPT) of a variable in a dynamic Bayesian network.
 
     Parameters
@@ -283,8 +282,9 @@ def _myTitleHisto(p, show_mu_sigma=True):
 ph._getTitleHisto = _myTitleHisto
 
 def getPosterior(bn, evs, target):
-    """
-    shortcut for proba2histo(gum.getPosterior(bn,evs,target))
+    r"""
+    Computes and visualizes the posterior distribution of a target variable
+    in an unrolled dynamic Bayesian network, given evidence.
 
     Parameters
     ----------
@@ -310,7 +310,7 @@ def getPosterior(bn, evs, target):
     return gnb.getPosterior(bn, evs=raw_evs, target=raw_target)
 
 def plotFollow(lovars, kTBN, T, evs):
-  """
+  r"""
   plots modifications of variables in a kTBN knowing the size of the time window (T) and the evidence on the sequence.
 
   :param lovars: list of variables to follow
